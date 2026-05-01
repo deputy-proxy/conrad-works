@@ -219,7 +219,7 @@
                             all at once.
                         </h1>
                         <p class="cw-thin mt-4 max-w-[22rem] text-[13px] text-white/40">
-                            Scroll the list. Tap a role to see what it means today. Bare in mind that this is still a work in progress though. 
+                            Scroll the list. Tap a role to see what it means today. <br/>Bare in mind that this is still a work in progress though. 
                         </p>
                     </div>
                 </aside>
