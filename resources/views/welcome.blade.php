@@ -73,11 +73,9 @@
             }
 
             .role-pill {
-                border: 1px solid #2a2a2a;
-                border-radius: 10px;
                 transition: background-color 260ms ease, color 260ms ease, border-color 260ms ease, transform 260ms ease;
             }
-            .role-pill.is-selected { border-color: rgba(255,255,255,.9); }
+            .role-pill.is-selected { }
             .role-label { color: #8a8a8a; transition: color 260ms ease; }
             .role-label .keyword {
                 font-style: italic; font-weight: 700; color: #8a8a8a;
@@ -87,7 +85,7 @@
             .role-row.is-selected .role-label .keyword { color: #ffffff; }
             .role-row.is-expanded .role-label .keyword { color: #ffffff; }
 
-            .role-pill.is-open-simple { background:#ffffff; color:#000000; border-color:#ffffff; }
+            .role-pill.is-open-simple { background:#ffffff; color:#000000;  }
             .rich-card { background:#ffffff; color:#000000; border-radius:18px; }
             .rich-card .mini-card { border:1px solid rgba(0,0,0,.12); border-radius:12px; }
             /* Selected rich card caps at viewport height and scrolls internally */
@@ -138,13 +136,10 @@
             #root { display: contents; }
         </style>
 
-        <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
-        <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
+
     </head>
     <body class="grain min-h-screen">
         <noscript>You need to enable JavaScript to run this app.</noscript>
-
-        <!-- Conrad.Works app (Tailwind + Alpine, no React) -->
         <div
             x-data="conradWorks()"
             x-init="init()"
@@ -212,7 +207,7 @@
                                 <template x-if="expanded.type === 'simple'">
                                     <button
                                         type="button"
-                                        class="role-pill is-open-simple fade-up w-full px-6 py-5 text-left text-[15px]"
+                                        class="role-pill is-open-simple fade-up w-full px-6 py-5 text-left text-[15px] rounded-lg"
                                         :data-testid="`role-open-${expanded.key}`"
                                         @click="collapse()"
                                     >
@@ -296,7 +291,7 @@
 
                             <template x-for="(item, i) in loopedRoles" :key="i + '-' + item.key">
                                 <div
-                                    class="wheel-item flex items-center justify-center py-1.5"
+                                    class="wheel-item flex items-center justify-center py-3"
                                     :style="itemStyle(i)"
                                     :data-index="i"
                                 >
@@ -310,7 +305,7 @@
                                         <div class="role-label text-left cw-serif text-[13px] italic md:text-right md:text-[15px]">
                                             <span>as </span><span x-text="item.article + ' '"></span><span class="keyword" x-text="item.label"></span>
                                         </div>
-                                        <div class="role-pill px-5 py-4 text-left text-[14px] text-white/85" :class="{ 'is-selected': i === centerIndex }">
+                                        <div class="role-pill px-2 py-2 text-left text-[14px] text-white/85 border border-gray-900 rounded-md"  :class="{ 'is-selected, border-white/40': i === centerIndex  }">
                                             <span class="opacity-70" x-text="item.preview"></span>
                                         </div>
                                     </button>
@@ -570,79 +565,6 @@
                     }
                 };
             }
-        </script>
-
-       
-        <script>
-            !(function (t, e) {
-                var o, n, p, r;
-                e.__SV ||
-                    ((window.posthog = e),
-                    (e._i = []),
-                    (e.init = function (i, s, a) {
-                        function g(t, e) {
-                            var o = e.split(".");
-                            2 == o.length && ((t = t[o[0]]), (e = o[1])),
-                                (t[e] = function () {
-                                    t.push(
-                                        [e].concat(
-                                            Array.prototype.slice.call(
-                                                arguments,
-                                                0,
-                                            ),
-                                        ),
-                                    );
-                                });
-                        }
-                        ((p = t.createElement("script")).type =
-                            "text/javascript"),
-                            (p.crossOrigin = "anonymous"),
-                            (p.async = !0),
-                            (p.src =
-                                s.api_host.replace(
-                                    ".i.posthog.com",
-                                    "-assets.i.posthog.com",
-                                ) + "/static/array.js"),
-                            (r =
-                                t.getElementsByTagName(
-                                    "script",
-                                )[0]).parentNode.insertBefore(p, r);
-                        var u = e;
-                        for (
-                            void 0 !== a ? (u = e[a] = []) : (a = "posthog"),
-                                u.people = u.people || [],
-                                u.toString = function (t) {
-                                    var e = "posthog";
-                                    return (
-                                        "posthog" !== a && (e += "." + a),
-                                        t || (e += " (stub)"),
-                                        e
-                                    );
-                                },
-                                u.people.toString = function () {
-                                    return u.toString(1) + ".people (stub)";
-                                },
-                                o =
-                                    "init me ws ys ps bs capture je Di ks register register_once register_for_session unregister unregister_for_session Ps getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Es $s createPersonProfile Is opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing Ss debug xs getPageViewId captureTraceFeedback captureTraceMetric".split(
-                                        " ",
-                                    ),
-                                n = 0;
-                            n < o.length;
-                            n++
-                        )
-                            g(u, o[n]);
-                        e._i.push([i, s, a]);
-                    }),
-                    (e.__SV = 1));
-            })(document, window.posthog || []);
-            posthog.init("phc_xAvL2Iq4tFmANRE7kzbKwaSqp1HJjN7x48s3vr0CMjs", {
-                api_host: "https://us.i.posthog.com",
-                person_profiles: "identified_only",
-                session_recording: {
-                    recordCrossOriginIframes: true,
-                    capturePerformance: false,
-                },
-            });
         </script>
     </body>
 </html>
