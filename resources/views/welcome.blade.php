@@ -8,7 +8,7 @@
             name="description"
             content="Conrad.Works — a human, father, husband, consultant, entrepreneur, writer, trainer and songwriter."
         />
-        <title>Conrad.Works</title>
+        <title>Conrad.Works - a portfolio of roles</title>
 
         <!-- Tailwind (CDN) -->
         <script src="https://cdn.tailwindcss.com"></script>
