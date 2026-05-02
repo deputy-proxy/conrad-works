@@ -121,7 +121,7 @@
             /* Reset button defaults (Tailwind preflight may be disabled in iframe) */
             button {
                 background: transparent;
-                border: 0;
+
                 padding: 0;
                 margin: 0;
                 color: inherit;
@@ -330,7 +330,7 @@
                                 >
                                     <button
                                         type="button"
-                                        class="role-row grid w-full nogrid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:gap-6 grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)] border border-gray-600  rounded-md sm:border-0" 
+                                        class="role-row grid w-full nogrid-cols-[auto_minmax(0,1fr)] items-center gap sm:gap-6 grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)] border p-2 border-gray-800 rounded-md sm:border-0" 
                                         :class="{ 'is-selected border-white/20': i === centerIndex }"
                                         :data-testid="`wheel-row-${item.key}-${i}`"
                                         @click="onRowClick(i)"
@@ -338,7 +338,7 @@
                                         <div class="role-label text-left cw-serif text-[14px] italic md:text-right md:text-[15px]">
                                             <span>as </span><span x-text="item.article + ' '"></span><span class="keyword" x-text="item.label"></span>
                                         </div>
-                                        <div class="role-pill px-2 sm:py-2 py-0 text-left text-[14px] text-white/85 sm:border border-gray-900 rounded-md"  :class="{ 'is-selected border-white/40': i === centerIndex  }">
+                                        <div class="role-pill sm:px-2 sm:py-2 py-0 text-left text-[12px] text-white/65 sm:border border-gray-900 rounded-md"  :class="{ 'is-selected border-white/40': i === centerIndex  }">
                                             <span class="opacity-70" x-text="item.preview"></span>
                                         </div>
                                     </button>
