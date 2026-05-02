@@ -73,10 +73,10 @@
             }
 
             .role-pill {
-                transition: background-color 260ms ease, color 260ms ease, border-color 260ms ease, transform 260ms ease;
+                transition: background-color 2600ms ease, color 260ms ease, border-color 260ms ease, transform 260ms ease;
             }
             .role-pill.is-selected { }
-            .role-label { color: #8a8a8a; transition: color 260ms ease; }
+            .role-label { color: #8a8a8a; transition: color 2600ms ease; }
             .role-label .keyword {
                 font-style: italic; font-weight: 700; color: #8a8a8a;
                 transition: color 260ms ease;
@@ -330,15 +330,15 @@
                                 >
                                     <button
                                         type="button"
-                                        class="role-row grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-6 md:grid-cols-[200px_minmax(0,1fr)]"
-                                        :class="{ 'is-selected': i === centerIndex }"
+                                        class="role-row grid w-full nogrid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:gap-6 grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)] border border-gray-600  rounded-md sm:border-0" 
+                                        :class="{ 'is-selected border-white/20': i === centerIndex }"
                                         :data-testid="`wheel-row-${item.key}-${i}`"
                                         @click="onRowClick(i)"
                                     >
-                                        <div class="role-label text-left cw-serif text-[13px] italic md:text-right md:text-[15px]">
+                                        <div class="role-label text-left cw-serif text-[14px] italic md:text-right md:text-[15px]">
                                             <span>as </span><span x-text="item.article + ' '"></span><span class="keyword" x-text="item.label"></span>
                                         </div>
-                                        <div class="role-pill px-2 py-2 text-left text-[14px] text-white/85 border border-gray-900 rounded-md"  :class="{ 'is-selected, border-white/40': i === centerIndex  }">
+                                        <div class="role-pill px-2 sm:py-2 py-0 text-left text-[14px] text-white/85 sm:border border-gray-900 rounded-md"  :class="{ 'is-selected border-white/40': i === centerIndex  }">
                                             <span class="opacity-70" x-text="item.preview"></span>
                                         </div>
                                     </button>
