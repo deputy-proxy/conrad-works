@@ -40,11 +40,9 @@
                 -webkit-font-smoothing: antialiased;
                 text-rendering: optimizeLegibility;
             }
-            /* Serif font anchored in <style> so it can't be wiped by a replaced Tailwind config */
             .cw-serif {
                 font-family: 'Instrument Serif', ui-serif, Georgia, serif !important;
             }
-            /* Lock typography weights so they don't flip when Tailwind preflight is re-applied inside the iframe */
             h1, h2, h3, h4, h5, h6 { font-weight: 400 !important; }
             h1.cw-h1, .cw-h1 { font-weight: 400 !important; }
             .cw-card-h3 { font-weight: 600 !important; }
@@ -85,10 +83,9 @@
             .role-row.is-selected .role-label .keyword { color: #ffffff; }
             .role-row.is-expanded .role-label .keyword { color: #ffffff; }
 
-            .role-pill.is-open-simple { background:#ffffff; color:#000000;  }
+            .role-pill.is-open-simple { background:#ffffff; color:#000000; }
             .rich-card { background:#ffffff; color:#000000; border-radius:18px; }
             .rich-card .mini-card { border:1px solid rgba(0,0,0,.12); border-radius:12px; }
-            /* Selected rich card caps at viewport height and scrolls internally */
             .rich-scroll {
                 max-height: calc(100vh - 8rem);
                 overflow-y: auto;
@@ -106,8 +103,24 @@
                 background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/></svg>");
             }
 
-            @keyframes fadeUp { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
-            .fade-up { animation: fadeUp 420ms cubic-bezier(.2,.8,.2,1) both; }
+            /* ── Expand / collapse animations ── */
+            @keyframes expandDown {
+                from { opacity:1; clip-path: inset(50% 0 50% 0); }
+                to   { opacity:1; clip-path: inset(0% 0 0% 0); }
+            }
+            @keyframes collapseUp {
+                from { opacity:1; clip-path: inset(0% 0 0% 0); }
+                to   { opacity:0; clip-path: inset(50% 0 50% 0); }
+            }
+            .fade-up {
+                animation: expandDown 780ms cubic-bezier(.2,.08,.2,1) both;
+            }
+            .fade-down {
+                animation: collapseUp 360ms cubic-bezier(.4,0,.2,1) both;
+                pointer-events: none;
+            }
+
+            
 
             .link-underline { position: relative; }
             .link-underline::after {
@@ -118,10 +131,8 @@
 
             .logo-mark { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; letter-spacing: -0.02em; }
 
-            /* Reset button defaults (Tailwind preflight may be disabled in iframe) */
             button {
                 background: transparent;
-
                 padding: 0;
                 margin: 0;
                 color: inherit;
@@ -131,12 +142,8 @@
                 appearance: none;
             }
             [x-cloak] { display: none !important; }
-
-            /* Hide the emergent posthog recorder-style overlay just in case */
             #root { display: contents; }
         </style>
-
-
     </head>
     <body class="grain min-h-screen">
         <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -219,98 +226,101 @@
                             all at once.
                         </h1>
                         <p class="cw-thin mt-4 max-w-[22rem] text-[13px] text-white/40">
-                            Scroll the list. Tap a role to see what it means today. <br/>Bare in mind that this is still a work in progress though. 
+                            Scroll the list. Tap a role to see what it means today. <br/>Bare in mind that this is still a work in progress though.
                         </p>
                     </div>
                 </aside>
 
                 <!-- Right: wheel / expanded -->
                 <section class="order-1 relative flex min-h-screen w-full items-center justify-center md:order-2">
-                    <!-- Expanded panel -->
-                    <template x-if="expandedIndex !== null">
-                        <div
-                            class="absolute inset-0 flex flex-col items-stretch justify-center gap-6 px-2 py-12 md:px-0"
-                            data-testid="expanded-view"
-                        >
-                            <div class="role-row is-expanded grid grid-cols-1 items-start gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6">
-                                <div class="role-label pt-1 text-left cw-serif text-[13px] italic md:pt-6 md:text-right md:text-[15px]">
-                                    <span>as </span><span x-text="expanded.article + ' '"></span><span class="keyword" x-text="expanded.label"></span>
-                                </div>
 
-                                <template x-if="expanded.type === 'simple'">
-                                    <button
-                                        type="button"
-                                        class="role-pill is-open-simple fade-up w-full px-6 py-5 text-left text-[15px] rounded-lg"
-                                        :data-testid="`role-open-${expanded.key}`"
-                                        @click="collapse()"
-                                    >
-                                        <span x-text="expanded.content"></span>
-                                    </button>
-                                </template>
-
-                                <template x-if="expanded.type === 'rich'">
-                                    <div
-                                        class="rich-card rich-scroll fade-up w-full cursor-pointer p-8"
-                                        :data-testid="`role-open-${expanded.key}`"
-                                        @click.self="collapse()"
-                                    >
-                                        <h3 class="cw-card-h3 text-[20px] tracking-tight">
-                                            <span x-text="expanded.title"></span>
-                                        </h3>
-                                        <div class="mt-3 space-y-1 text-[13px] leading-relaxed text-black/70">
-                                            <template x-for="p in expanded.description" :key="p">
-                                                <p x-text="p"></p>
-                                            </template>
-                                        </div>
-
-                                        <template x-for="(group, gi) in expanded.groups" :key="group.heading">
-                                            <div :class="gi === 0 ? 'mt-8' : 'mt-10'">
-                                                <h4 class="cw-card-h4 text-[14px]" x-text="group.heading"></h4>
-                                                <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-5">
-                                                    <template x-for="item in group.items" :key="item.name">
-                                                        <a
-                                                            :href="item.url"
-                                                            target="_blank"
-                                                            rel="noopener"
-                                                            class="mini-card flex flex-col gap-3 p-4 transition hover:border-black/40"
-                                                            @click.stop
-                                                        >
-                                                            <div class="cw-card-name text-[13px]" x-text="item.name"></div>
-                                                            <p class="min-h-[7rem] text-[11px] leading-[1.5] text-black/70" x-text="item.desc"></p>
-                                                            <div class="mt-auto text-right text-[10px] text-black/50" x-text="item.url.replace(/^https?:\/\//, '')"></div>
-                                                        </a>
-                                                    </template>
-                                                </div>
-                                            </div>
-                                        </template>
-
-                                        <div class="mt-8 flex justify-end">
-                                            <button
-                                                type="button"
-                                                class="cw-thin text-[11px] uppercase tracking-[0.2em] text-black/40 hover:text-black"
-                                                data-testid="collapse-btn"
-                                                @click.stop="collapse()"
-                                            >close</button>
-                                        </div>
-                                    </div>
-                                </template>
+                    <!-- Expanded panel — x-show keeps element in DOM so collapse animation can play -->
+                    <div
+                        x-show="expandedIndex !== null"
+                        :class="isCollapsing ? 'fade-down' : 'fade-up'"
+                        class="absolute inset-0 flex flex-col items-stretch justify-center gap-6 px-2 py-12 md:px-0"
+                        data-testid="expanded-view"
+                        style="display:none"
+                    >
+                        
+                        <div class="role-row is-expanded grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6 content-center">
+                            <div class="role-label pt-1 text-left cw-serif text-[13px] italic md:pt-6 md:text-right md:text-[25px]">
+                                <span>as </span><span x-text="expanded ? expanded.article + ' ' : ''"></span><span class="keyword" x-text="expanded ? expanded.label : ''"></span>
                             </div>
 
-                            <!-- Faded hint under the selected role -->
-                            <button
-                                type="button"
-                                class="cw-thin mt-6 self-center text-[10px] uppercase tracking-[0.3em] text-white/30 transition hover:text-white/70"
-                                data-testid="esc-hint"
-                                @click="collapse()"
-                            >
-                                esc to go back
-                            </button>
+                            <template x-if="expanded && expanded.type === 'simple'">
+                                <button
+                                    type="button"
+                                    class="role-pill is-open-simple w-full px-6 py-5 text-left text-[15px] rounded-lg"
+                                    :data-testid="`role-open-${expanded.key}`"
+                                    @click="collapse()"
+                                >
+                                    <span x-text="expanded.content"></span>
+                                </button>
+                            </template>
+
+                            <template x-if="expanded && expanded.type === 'rich'">
+                                <div
+                                    class="rich-card rich-scroll w-full cursor-pointer p-8"
+                                    :data-testid="`role-open-${expanded.key}`"
+                                    @click.self="collapse()"
+                                >
+                                    <h3 class="cw-card-h3 text-[20px] tracking-tight">
+                                        <span x-text="expanded.title"></span>
+                                    </h3>
+                                    <div class="mt-3 space-y-1 text-[13px] leading-relaxed text-black/70">
+                                        <template x-for="p in expanded.description" :key="p">
+                                            <p x-text="p"></p>
+                                        </template>
+                                    </div>
+
+                                    <template x-for="(group, gi) in expanded.groups" :key="group.heading">
+                                        <div :class="gi === 0 ? 'mt-8' : 'mt-10'">
+                                            <h4 class="cw-card-h4 text-[14px]" x-text="group.heading"></h4>
+                                            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3">
+                                                <template x-for="item in group.items" :key="item.name">
+                                                    <a
+                                                        :href="item.url"
+                                                        target="_blank"
+                                                        rel="noopener"
+                                                        class="mini-card flex flex-col gap-3 p-4 transition hover:border-black/40"
+                                                        @click.stop
+                                                    >
+                                                        <div class="cw-card-name text-[13px]" x-text="item.name"></div>
+                                                        <p class="min-h-[7rem] text-[11px] leading-[1.5] text-black/70" x-text="item.desc"></p>
+                                                        <div class="mt-auto text-right text-[10px] text-black/50" x-text="item.url.replace(/^https?:\/\//, '')"></div>
+                                                    </a>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <div class="mt-8 flex justify-end">
+                                        <button
+                                            type="button"
+                                            class="cw-thin text-[11px] uppercase tracking-[0.2em] text-black/40 hover:text-black"
+                                            data-testid="collapse-btn"
+                                            @click.stop="collapse()"
+                                        >close</button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
-                    </template>
+
+                        <!-- Faded hint under the selected role -->
+                        <button
+                            type="button"
+                            class="cw-thin mt-6 self-center text-[10px] uppercase tracking-[0.3em] text-white/30 transition hover:text-white/70"
+                            data-testid="esc-hint"
+                            @click="collapse()"
+                        >
+                            esc to go back
+                        </button>
+                    </div>
 
                     <!-- Wheel -->
                     <div
-                        x-show="expandedIndex === null"
+                        x-show="expandedIndex === null && !isCollapsing"
                         x-transition.opacity
                         class="wheel-mask relative h-[85vh] w-full overflow-hidden"
                     >
@@ -330,7 +340,7 @@
                                 >
                                     <button
                                         type="button"
-                                        class="role-row grid w-full nogrid-cols-[auto_minmax(0,1fr)] items-center gap sm:gap-6 grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)] border p-2 border-gray-800 rounded-md sm:border-0" 
+                                        class="role-row grid w-full nogrid-cols-[auto_minmax(0,1fr)] items-center gap sm:gap-6 grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)] border p-2 border-gray-800 rounded-md sm:border-0"
                                         :class="{ 'is-selected border-white/20': i === centerIndex }"
                                         :data-testid="`wheel-row-${item.key}-${i}`"
                                         @click="onRowClick(i)"
@@ -338,7 +348,7 @@
                                         <div class="role-label text-left cw-serif text-[14px] italic md:text-right md:text-[15px]">
                                             <span>as </span><span x-text="item.article + ' '"></span><span class="keyword" x-text="item.label"></span>
                                         </div>
-                                        <div class="role-pill sm:px-2 sm:py-2 py-0 text-left text-[12px] text-white/65 sm:border border-gray-900 rounded-md"  :class="{ 'is-selected border-white/40': i === centerIndex  }">
+                                        <div class="role-pill sm:px-2 sm:py-2 py-0 text-left text-[12px] text-white/65 sm:border border-gray-900 rounded-md" :class="{ 'is-selected border-white/40': i === centerIndex }">
                                             <span class="opacity-70" x-text="item.preview"></span>
                                         </div>
                                     </button>
@@ -388,7 +398,7 @@
                       ],
                       groups: [
                         { heading: 'Developing on my own', items: [
-                          { name: 'plan.gifts',    desc: 'Gift analytics. I know, right? Everything you need to never forget again, to pick the right gift and to impress your friends and family with gifts for weird occasions.', url: 'https://plan.gifts' },
+                          { name: 'plan.gifts',      desc: 'Gift analytics. I know, right? Everything you need to never forget again, to pick the right gift and to impress your friends and family with gifts for weird occasions.', url: 'https://plan.gifts' },
                           { name: 'notional.studio', desc: 'Gift analytics. I know, right? Everything you need to never forget again, to pick the right gift and to impress your friends and family with gifts for weird occasions.', url: 'https://plan.gifts' },
                           { name: 'well.ness.land',  desc: 'Gift analytics. I know, right? Everything you need to never forget again, to pick the right gift and to impress your friends and family with gifts for weird occasions.', url: 'https://plan.gifts' },
                           { name: 'valid.guide',     desc: 'Gift analytics. I know, right? Everything you need to never forget again, to pick the right gift and to impress your friends and family with gifts for weird occasions.', url: 'https://plan.gifts' },
@@ -421,6 +431,7 @@
                     loopedRoles: [],
                     centerIndex: 0,
                     expandedIndex: null,
+                    isCollapsing: false,
                     halfViewport: 0,
                     itemHeight: 0,
                     _scrollAf: null,
@@ -429,22 +440,6 @@
                     get expanded() {
                         if (this.expandedIndex === null) return null;
                         return this.loopedRoles[this.expandedIndex];
-                    },
-                    get neighborsAbove() {
-                        if (this.expandedIndex === null) return [];
-                        const out = [];
-                        for (let off = 2; off >= 1; off--) {
-                            out.push(this.loopedRoles[this._wrap(this.expandedIndex - off)]);
-                        }
-                        return out;
-                    },
-                    get neighborsBelow() {
-                        if (this.expandedIndex === null) return [];
-                        const out = [];
-                        for (let off = 1; off <= 1; off++) {
-                            out.push(this.loopedRoles[this._wrap(this.expandedIndex + off)]);
-                        }
-                        return out;
                     },
 
                     init() {
@@ -477,11 +472,9 @@
                     },
 
                     _stepBy(delta) {
-                        // Guard against duplicate invocations within a single keystroke frame
                         const now = Date.now();
                         if (this._lastStepAt && now - this._lastStepAt < 120) return;
                         this._lastStepAt = now;
-
                         const next = this.centerIndex + delta;
                         this._programmaticLock = true;
                         this._scrollToIndex(next, true);
@@ -504,8 +497,6 @@
                         const el = items[index];
                         if (!el) return;
                         const target = el.offsetTop - wheel.clientHeight / 2 + el.offsetHeight / 2;
-                        // Temporarily disable scroll-snap so smooth scroll lands exactly on target
-                        // without snap engine pulling to an adjacent item.
                         const prevSnap = wheel.style.scrollSnapType;
                         wheel.style.scrollSnapType = 'none';
                         wheel.scrollTo({ top: target, behavior: smooth ? 'smooth' : 'auto' });
@@ -517,7 +508,7 @@
                     },
 
                     onScroll() {
-                        if (this._programmaticLock) return; // ignore scroll while we're driving it
+                        if (this._programmaticLock) return;
                         if (this._scrollAf) cancelAnimationFrame(this._scrollAf);
                         this._scrollAf = requestAnimationFrame(() => {
                             const wheel = this.$refs.wheel;
@@ -562,16 +553,23 @@
                         else this._scrollToIndex(i, true);
                     },
 
-                    expand(i) { this.expandedIndex = i; },
+                    expand(i) {
+                        this.isCollapsing = false;
+                        this.expandedIndex = i;
+                    },
 
                     collapse() {
                         if (this.expandedIndex === null) return;
                         const prev = this.expandedIndex;
-                        this.expandedIndex = null;
-                        this.$nextTick(() => {
-                            this._measure();
-                            this._scrollToIndex(prev, false);
-                        });
+                        this.isCollapsing = true;
+                        setTimeout(() => {
+                            this.expandedIndex = null;
+                            this.isCollapsing = false;
+                            this.$nextTick(() => {
+                                this._measure();
+                                this._scrollToIndex(prev, false);
+                            });
+                        }, 370);
                     },
 
                     _wrap(i) {
