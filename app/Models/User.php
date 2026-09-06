@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -31,6 +32,18 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function myRoles(): HasMany { return $this->hasMany(MyRole::class)->orderBy('sort_order'); }
+
+    public function habits(): HasMany { return $this->hasMany(Habit::class); }
+    public function wifeMessages(): HasMany { return $this->hasMany(WifeMessage::class); }
+    public function daughterMessages(): HasMany { return $this->hasMany(DaughterMessage::class); }
+    public function bookableSlots(): HasMany { return $this->hasMany(BookableSlot::class); }
+    public function ventures(): HasMany { return $this->hasMany(Venture::class); }
+    public function books(): HasMany { return $this->hasMany(Book::class); }
+    public function articles(): HasMany { return $this->hasMany(Article::class); }
+    public function courses(): HasMany { return $this->hasMany(Course::class); }
+    public function songs(): HasMany { return $this->hasMany(Song::class); }
 
     /**
      * Get the user's initials
