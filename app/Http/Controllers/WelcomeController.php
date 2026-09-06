@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Article,Book,BookableSlot,Course,DaughterMessage,Habit,HabitCompletion,MyRole,Song,Venture,WifeMessage};
+use App\Support\RoleRepresentativeModels;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -12,8 +13,9 @@ class WelcomeController extends Controller
 {
     public function __invoke(): View
     {
-        $user = User::query()->first();
+        $user = auth()->user() ?: User::query()->first();
         $roles = MyRole::query()
+            ->where('user_id', $user?->id ?? 0)
             ->where('is_active', true)
             ->with('representativeModels')
             ->orderBy('sort_order')
@@ -27,8 +29,28 @@ class WelcomeController extends Controller
 
     private function roleViewData(MyRole $role, ?User $user): array
     {
-        $representatives = $role->representativeModels->map(fn ($representative) => $this->representativeGroup($representative->model_type, $representative->label, $user))->filter()->values()->all();
-        $isRich = $role->type === 'rich' || count($representatives) > 0;
+        // The role key is authoritative. Representative rows are metadata only,
+        // so stale data can never make Human render Ventures, etc.
+        $definitions = RoleRepresentativeModels::forRole($role->key);
+
+        $representatives = collect($definitions)
+            ->map(function (array $definition) use ($role, $user) {
+                $stored = $role->representativeModels->first(
+                    fn ($representative) => $representative->model_type === $definition['model']
+                );
+
+                return $this->representativeGroup(
+                    $definition['model'],
+                    $stored?->label ?: $definition['label'],
+                    $stored?->template,
+                    $user
+                );
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        $isRich = count($representatives) > 0;
 
         return [
             'key' => $role->key,
@@ -43,19 +65,16 @@ class WelcomeController extends Controller
         ];
     }
 
-    private function representativeGroup(string $modelClass, ?string $label, ?User $user): ?array
+    private function representativeGroup(string $modelClass, ?string $label, ?string $template, ?User $user): ?array
     {
-        if (! $user || ! is_a($modelClass, Model::class, true)) {
+        $definition = RoleRepresentativeModels::definition($modelClass);
+
+        if (! $user || ! $definition || ! is_a($modelClass, Model::class, true)) {
             return null;
         }
 
         $query = $modelClass::query()->where('user_id', $user->id);
-        $defaultLabel = match (class_basename($modelClass)) {
-            'WifeMessage' => 'Wife Messages',
-            'DaughterMessage' => 'Daughter Messages',
-            'BookableSlot' => 'Bookable Slots',
-            default => class_basename($modelClass) . 's',
-        };
+        $defaultLabel = $definition['label'];
 
         if ($modelClass === Habit::class) {
             $from = Carbon::today()->subDays(55);
@@ -89,6 +108,7 @@ class WelcomeController extends Controller
 
             return [
                 'heading' => $label ?: $defaultLabel,
+                'template' => $template,
                 'type' => 'habit-grid',
                 'dates' => $dates->map(fn (Carbon $date) => [
                     'date' => $date->toDateString(),
@@ -125,6 +145,7 @@ class WelcomeController extends Controller
 
             return [
                 'heading' => $label ?: $defaultLabel,
+                'template' => $template,
                 'type' => 'calendar',
                 'week_label' => $monday->format('M j') . ' – ' . $friday->format('M j, Y'),
                 'days' => $days->map(fn (Carbon $day) => [
@@ -138,27 +159,79 @@ class WelcomeController extends Controller
         }
 
         $items = match ($modelClass) {
-            Venture::class => $query->orderByDesc('featured')->latest()->get()->map(fn (Venture $item) => ['name'=>$item->name,'desc'=>$item->description ?? '','url'=>$item->url ?: '#','status'=>$item->status,'type'=>$item->type]),
-            Book::class => $query->latest()->get()->map(fn (Book $item) => ['name'=>$item->title,'desc'=>$item->description ?? '','url'=>$item->url ?: '#','status'=>$item->status,'subtitle'=>$item->subtitle]),
-            Article::class => $query->latest('published_at')->get()->map(fn (Article $item) => ['name'=>$item->title,'desc'=>$item->excerpt ?? '','url'=>$item->url ?: '#','status'=>$item->status,'publication'=>$item->publication,'date'=>$item->published_at?->format('M j, Y')]),
-            Course::class => $query->latest()->get()->map(fn (Course $item) => ['name'=>$item->title,'desc'=>$item->description ?? '','url'=>'#','status'=>$item->status,'duration'=>$item->duration,'price'=>$item->price,'audience'=>$item->audience]),
-            Song::class => $query->latest()->get()->map(fn (Song $item) => ['name'=>$item->title,'desc'=>$item->description ?? '','url'=>$item->audio ?: '#','status'=>$item->status,'date'=>$item->written_at?->format('M j, Y')]),
-            WifeMessage::class => $query->latest('message_date')->get()->map(fn (WifeMessage $item) => ['name'=>$item->title,'desc'=>$item->message,'url'=>'#','type'=>$item->type,'date'=>$item->message_date?->format('M j, Y')]),
-            DaughterMessage::class => $query->latest('message_date')->get()->map(fn (DaughterMessage $item) => ['name'=>$item->title,'desc'=>$item->message,'url'=>'#','occasion'=>$item->occasion,'age'=>$item->age_at_time,'date'=>$item->message_date?->format('M j, Y')]),
+            Venture::class => $query->orderByDesc('featured')->latest()->get()->map(fn (Venture $item) => [
+                'name' => $item->name,
+                'desc' => $item->description ?? '',
+                'url' => $item->url ?: '#',
+                'status' => $item->status,
+                'type' => $item->type,
+                'started' => $item->started_at?->format('M Y'),
+                'ended' => $item->ended_at?->format('M Y'),
+                'featured' => $item->featured,
+            ]),
+            Book::class => $query->latest()->get()->map(fn (Book $item) => [
+                'name' => $item->title,
+                'desc' => $item->description ?? '',
+                'url' => $item->url ?: '#',
+                'status' => $item->status,
+                'subtitle' => $item->subtitle,
+                'published' => $item->published_at?->format('Y'),
+                'isbn' => $item->isbn,
+                'cover' => $item->cover,
+            ]),
+            Article::class => $query->latest('published_at')->get()->map(fn (Article $item) => [
+                'name' => $item->title,
+                'desc' => $item->excerpt ?? '',
+                'url' => $item->url ?: '#',
+                'status' => $item->status,
+                'publication' => $item->publication,
+                'date' => $item->published_at?->format('M j, Y'),
+            ]),
+            Course::class => $query->latest()->get()->map(fn (Course $item) => [
+                'name' => $item->title,
+                'desc' => $item->description ?? '',
+                'url' => '#',
+                'status' => $item->status,
+                'duration' => $item->duration,
+                'price' => $item->price,
+                'audience' => $item->audience,
+                'image' => $item->image,
+            ]),
+            Song::class => $query->latest()->get()->map(fn (Song $item) => [
+                'name' => $item->title,
+                'desc' => $item->description ?? '',
+                'url' => $item->audio ?: '#',
+                'status' => $item->status,
+                'date' => $item->written_at?->format('M j, Y'),
+                'recording' => $item->recording,
+                'cover' => $item->cover,
+                'has_audio' => filled($item->audio),
+            ]),
+            WifeMessage::class => $query->latest('message_date')->get()->map(fn (WifeMessage $item) => [
+                'name' => $item->title,
+                'desc' => $item->message,
+                'url' => '#',
+                'type' => $item->type,
+                'date' => $item->message_date?->format('M j, Y'),
+                'year' => $item->message_date?->format('Y'),
+            ]),
+            DaughterMessage::class => $query->orderBy('age_at_time')->orderBy('message_date')->get()->map(fn (DaughterMessage $item) => [
+                'name' => $item->title,
+                'desc' => $item->message,
+                'url' => '#',
+                'occasion' => $item->occasion,
+                'age' => $item->age_at_time,
+                'date' => $item->message_date?->format('M j, Y'),
+            ]),
             default => collect(),
         };
 
-        $type = match ($modelClass) {
-            Venture::class => 'ventures',
-            Book::class => 'books',
-            Article::class => 'articles',
-            Course::class => 'courses',
-            Song::class => 'songs',
-            WifeMessage::class => 'wife-messages',
-            DaughterMessage::class => 'daughter-messages',
-            default => 'cards',
-        };
-
-        return ['heading' => $label ?: $defaultLabel, 'type' => $type, 'items' => $items->values()->all()];
+        return [
+            'heading' => $label ?: $defaultLabel,
+            'template' => $template,
+            'type' => 'rich',
+            'model_type' => $modelClass,
+            'items' => $items->values()->all(),
+        ];
     }
 }

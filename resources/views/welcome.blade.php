@@ -234,193 +234,49 @@
                 <!-- Right: wheel / expanded -->
                 <section class="order-1 relative flex min-h-screen w-full items-center justify-center md:order-2">
 
-                    <!-- Expanded panel — x-show keeps element in DOM so collapse animation can play -->
+                    <!-- Expanded panel: Alpine only controls which server-rendered panel is visible. -->
                     <div
-                        x-show="expandedIndex !== null"
+                        x-show="expandedKey !== null"
                         :class="isCollapsing ? 'fade-down' : 'fade-up'"
                         class="absolute inset-0 flex flex-col items-stretch justify-center gap-6 px-2 py-12 md:px-0"
                         data-testid="expanded-view"
                         style="display:none"
                     >
-                        
-                        <div class="role-row is-expanded grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6 content-center">
-                            <div class="role-label pt-1 text-left cw-serif text-[13px] italic md:pt-6 md:text-right md:text-[25px]">
-                                <span>as </span><span x-text="expanded ? expanded.article + ' ' : ''"></span><span class="keyword" x-text="expanded ? expanded.label : ''"></span>
-                            </div>
-
-                            <template x-if="expanded && expanded.type === 'simple'">
-                                <button
-                                    type="button"
-                                    class="role-pill is-open-simple w-full px-6 py-5 text-left text-[15px] rounded-lg"
-                                    :data-testid="`role-open-${expanded.key}`"
-                                    @click="collapse()"
-                                >
-                                    <span x-text="expanded.content"></span>
-                                </button>
-                            </template>
-
-                            <template x-if="expanded && expanded.type === 'rich'">
-                                <div
-                                    class="rich-card rich-scroll w-full cursor-pointer p-8"
-                                    :data-testid="`role-open-${expanded.key}`"
-                                    @click.self="collapse()"
-                                >
-                                    <h3 class="cw-card-h3 text-[20px] tracking-tight">
-                                        <span x-text="expanded.title"></span>
-                                    </h3>
-                                    <div class="mt-3 space-y-1 text-[13px] leading-relaxed text-black/70">
-                                        <template x-for="p in expanded.description" :key="p">
-                                            <p x-text="p"></p>
-                                        </template>
-                                    </div>
-
-                                    <template x-for="(group, gi) in expanded.groups" :key="group.heading">
-                                        <div :class="gi === 0 ? 'mt-8' : 'mt-10'">
-                                            <div class="flex items-end justify-between gap-4">
-                                                <h4 class="cw-card-h4 text-[14px]" x-text="group.heading"></h4>
-                                                <span x-show="group.week_label" class="text-[10px] uppercase tracking-[0.16em] text-black/40" x-text="group.week_label"></span>
-                                            </div>
-
-                                            <!-- Consultant: weekly availability calendar -->
-                                            <template x-if="group.type === 'calendar'">
-                                                <div class="mt-4 overflow-x-auto rounded-xl border border-black/10">
-                                                    <div class="min-w-[680px]">
-                                                        <div class="grid grid-cols-[64px_repeat(5,minmax(110px,1fr))] border-b border-black/10 bg-black/[0.025]">
-                                                            <div class="p-3"></div>
-                                                            <template x-for="day in group.days" :key="day.date">
-                                                                <div class="border-l border-black/10 p-3 text-center">
-                                                                    <div class="text-[10px] uppercase tracking-[0.18em] text-black/45" x-text="day.label"></div>
-                                                                    <div class="mt-1 text-[18px] cw-serif" x-text="day.number"></div>
-                                                                </div>
-                                                            </template>
-                                                        </div>
-                                                        <template x-for="(hour, hi) in group.hours" :key="hour">
-                                                            <div class="grid grid-cols-[64px_repeat(5,minmax(110px,1fr))] border-b border-black/[0.07] last:border-b-0">
-                                                                <div class="p-3 text-right text-[10px] tabular-nums text-black/40" x-text="hour"></div>
-                                                                <template x-for="day in group.days" :key="day.date + hour">
-                                                                    <div class="border-l border-black/[0.07] p-1.5">
-                                                                        <div
-                                                                            class="flex min-h-[52px] flex-col justify-between rounded-lg border p-2 transition"
-                                                                            :class="group.cells[day.date][hi + 8] ? (['available','booked','reserved'].includes(group.cells[day.date][hi + 8].status) ? 'border-black bg-black text-white' : 'border-black bg-black/10 text-black') : 'border-black/10 bg-black/[0.025] text-black/25'"
-                                                                        >
-                                                                            <template x-if="group.cells[day.date][hi + 8]">
-                                                                                <div>
-                                                                                    <div class="text-[10px] font-semibold uppercase tracking-[0.12em]" x-text="group.cells[day.date][hi + 8].status"></div>
-                                                                                    <div class="mt-1 text-[10px] opacity-70" x-text="group.cells[day.date][hi + 8].type || 'consultation'"></div>
-                                                                                </div>
-                                                                            </template>
-                                                                            <template x-if="!group.cells[day.date][hi + 8]">
-                                                                                <div class="flex h-full min-h-[38px] items-end text-[9px] uppercase tracking-[0.12em]">unavailable</div>
-                                                                            </template>
-                                                                        </div>
-                                                                    </div>
-                                                                </template>
-                                                            </div>
-                                                        </template>
-                                                    </div>
-                                                </div>
-                                            </template>
-
-                                            <!-- Human: habit contribution grid -->
-                                            <template x-if="group.type === 'habit-grid'">
-                                                <div class="mt-4 overflow-x-auto rounded-xl border border-black/10 p-4">
-                                                    <div class="min-w-[820px]">
-                                                        <div class="mb-2 grid grid-cols-[150px_minmax(0,1fr)] gap-3">
-                                                            <div></div>
-                                                            <div class="grid" :style="`grid-template-columns: repeat(${group.dates.length}, minmax(11px, 1fr)); gap: 3px;`">
-                                                                <template x-for="date in group.dates" :key="date.date">
-                                                                    <div class="text-center text-[7px] leading-none text-black/35" :title="date.date">
-                                                                        <span x-text="date.date.endsWith('-01') || date.date === group.dates[0].date ? date.month : ''"></span>
-                                                                    </div>
-                                                                </template>
-                                                            </div>
-                                                        </div>
-                                                        <template x-for="row in group.rows" :key="row.name">
-                                                            <div class="mb-2 grid grid-cols-[150px_minmax(0,1fr)] items-center gap-3 last:mb-0">
-                                                                <div class="truncate text-[10px] font-medium" :title="row.name" x-text="row.name"></div>
-                                                                <div class="grid" :style="`grid-template-columns: repeat(${row.cells.length}, minmax(11px, 1fr)); gap: 3px;`">
-                                                                    <template x-for="cell in row.cells" :key="cell.date">
-                                                                        <div
-                                                                            class="aspect-square rounded-[2px] border transition"
-                                                                            :class="!cell.scheduled ? 'border-black/[0.04] bg-black/[0.02]' : (cell.completed ? 'border-black bg-black' : 'border-black bg-white')"
-                                                                            :title="cell.date + (cell.completed ? ' · completed' : cell.scheduled ? ' · not completed' : ' · not scheduled')"
-                                                                        ></div>
-                                                                    </template>
-                                                                </div>
-                                                            </div>
-                                                        </template>
-                                                    </div>
-                                                    <div class="mt-5 flex items-center justify-end gap-4 text-[9px] uppercase tracking-[0.14em] text-black/40">
-                                                        <span class="flex items-center gap-2"><i class="h-3 w-3 border border-black bg-black"></i> completed</span>
-                                                        <span class="flex items-center gap-2"><i class="h-3 w-3 border border-black bg-white"></i> not completed</span>
-                                                        <span class="flex items-center gap-2"><i class="h-3 w-3 border border-black/10 bg-black/[0.02]"></i> not scheduled</span>
-                                                    </div>
-                                                </div>
-                                            </template>
-
-                                            <!-- Other models: intentionally distinct presentation -->
-                                            <template x-if="!['calendar','habit-grid'].includes(group.type)">
-                                                <div class="mt-4" :class="{
-                                                    'grid grid-cols-1 gap-3 md:grid-cols-2': ['ventures','courses','books'].includes(group.type),
-                                                    'space-y-0': ['articles','songs','wife-messages','daughter-messages'].includes(group.type)
-                                                }">
-                                                    <template x-for="item in group.items" :key="item.name">
-                                                        <template x-if="group.type === 'ventures'">
-                                                            <a :href="item.url" target="_blank" rel="noopener" class="mini-card group block p-5 transition hover:bg-black hover:text-white" @click.stop>
-                                                                <div class="flex items-start justify-between gap-4">
-                                                                    <div><div class="cw-card-name text-[15px]" x-text="item.name"></div><div class="mt-1 text-[9px] uppercase tracking-[0.16em] opacity-50" x-text="item.type || 'venture'"></div></div>
-                                                                    <span class="rounded-full border border-current px-2 py-1 text-[8px] uppercase tracking-[0.12em]" x-text="item.status"></span>
-                                                                </div>
-                                                                <p class="mt-5 text-[11px] leading-[1.55] opacity-65" x-text="item.desc"></p>
-                                                            </a>
-                                                        </template>
-                                                        <template x-if="group.type === 'books'">
-                                                            <a :href="item.url" target="_blank" rel="noopener" class="mini-card block p-5" @click.stop>
-                                                                <div class="flex gap-4"><div class="flex h-20 w-14 shrink-0 items-end justify-center border border-black bg-black p-2 text-center text-[9px] text-white"><span x-text="item.name"></span></div><div><div class="cw-card-name text-[14px]" x-text="item.name"></div><div class="mt-1 text-[10px] italic text-black/50" x-text="item.subtitle"></div><p class="mt-3 text-[11px] leading-[1.5] text-black/65" x-text="item.desc"></p></div></div>
-                                                            </a>
-                                                        </template>
-                                                        <template x-if="group.type === 'articles'">
-                                                            <a :href="item.url" target="_blank" rel="noopener" class="block border-b border-black/10 py-5 first:pt-0 last:border-b-0" @click.stop><div class="flex items-baseline justify-between gap-4"><div class="cw-card-name text-[15px]" x-text="item.name"></div><div class="shrink-0 text-[9px] uppercase tracking-[0.12em] text-black/40" x-text="item.date || item.publication"></div></div><p class="mt-2 max-w-2xl text-[11px] leading-[1.55] text-black/60" x-text="item.desc"></p></a>
-                                                        </template>
-                                                        <template x-if="group.type === 'courses'">
-                                                            <a href="#" class="mini-card block p-5" @click.stop><div class="flex items-start justify-between gap-4"><div><div class="cw-card-name text-[14px]" x-text="item.name"></div><div class="mt-1 text-[9px] uppercase tracking-[0.14em] text-black/40" x-text="item.audience"></div></div><div class="text-right"><div class="text-[13px]" x-text="item.price ? '€' + item.price : ''"></div><div class="text-[9px] uppercase tracking-[0.12em] text-black/40" x-text="item.duration"></div></div></div><p class="mt-4 text-[11px] leading-[1.5] text-black/65" x-text="item.desc"></p></a>
-                                                        </template>
-                                                        <template x-if="group.type === 'songs'">
-                                                            <div class="flex items-center gap-4 border-b border-black/10 py-4 last:border-b-0"><div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black text-[11px]">♪</div><div class="min-w-0 flex-1"><div class="cw-card-name text-[13px]" x-text="item.name"></div><div class="mt-1 text-[10px] text-black/50" x-text="item.desc"></div></div><div class="text-[9px] uppercase tracking-[0.12em] text-black/35" x-text="item.date"></div></div>
-                                                        </template>
-                                                        <template x-if="group.type === 'wife-messages'">
-                                                            <article class="border-b border-black/10 py-6 last:border-b-0"><div class="flex items-baseline justify-between gap-4"><div class="cw-card-name text-[14px]" x-text="item.name"></div><div class="text-[9px] uppercase tracking-[0.12em] text-black/35" x-text="item.date"></div></div><p class="mt-3 cw-serif text-[17px] leading-[1.35] text-black/75" x-text="item.desc"></p><div class="mt-3 text-[9px] uppercase tracking-[0.15em] text-black/35" x-text="item.type"></div></article>
-                                                        </template>
-                                                        <template x-if="group.type === 'daughter-messages'">
-                                                            <article class="relative border-l border-black/20 py-5 pl-6"><div class="absolute -left-[4px] top-7 h-2 w-2 rounded-full bg-black"></div><div class="flex items-baseline justify-between gap-4"><div class="cw-card-name text-[14px]" x-text="item.name"></div><div class="text-[9px] uppercase tracking-[0.12em] text-black/35" x-text="item.age ? 'age ' + item.age : item.date"></div></div><div class="mt-1 text-[9px] uppercase tracking-[0.15em] text-black/35" x-text="item.occasion"></div><p class="mt-3 cw-serif text-[17px] leading-[1.35] text-black/75" x-text="item.desc"></p></article>
-                                                        </template>
-                                                    </template>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </template>
-
-                                    <div class="mt-8 flex justify-end">
-                                        <button
-                                            type="button"
-                                            class="cw-thin text-[11px] uppercase tracking-[0.2em] text-black/40 hover:text-black"
-                                            data-testid="collapse-btn"
-                                            @click.stop="collapse()"
-                                        >close</button>
-                                    </div>
+                        @foreach($roles as $role)
+                            <div
+                                x-show="expandedKey === @js($role['key'])"
+                                class="role-row is-expanded grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6 content-center"
+                            >
+                                <div class="role-label pt-1 text-left cw-serif text-[13px] italic md:pt-6 md:text-right md:text-[25px]">
+                                    <span>as {{ $role['article'] }} </span><span class="keyword">{{ $role['label'] }}</span>
                                 </div>
-                            </template>
-                        </div>
 
-                        <!-- Faded hint under the selected role -->
-                        <button
-                            type="button"
-                            class="cw-thin mt-6 self-center text-[10px] uppercase tracking-[0.3em] text-white/30 transition hover:text-white/70"
-                            data-testid="esc-hint"
-                            @click="collapse()"
-                        >
-                            esc to go back
-                        </button>
+                                @if($role['type'] === 'simple')
+                                    <button type="button" class="role-pill is-open-simple w-full rounded-lg px-6 py-5 text-left text-[15px]" data-testid="role-open-{{ $role['key'] }}" @click="collapse()">
+                                        {{ $role['content'] }}
+                                    </button>
+                                @else
+                                    <div class="rich-card rich-scroll w-full cursor-pointer p-8" data-testid="role-open-{{ $role['key'] }}" @click.self="collapse()">
+                                        <h3 class="cw-card-h3 text-[20px] tracking-tight">{{ $role['title'] }}</h3>
+                                        @if(count($role['description']))
+                                            <div class="mt-3 space-y-1 text-[13px] leading-relaxed text-black/70">
+                                                @foreach($role['description'] as $paragraph)<p>{{ $paragraph }}</p>@endforeach
+                                            </div>
+                                        @endif
+                                        @foreach($role['groups'] as $group)
+                                            <div class="{{ $loop->first ? 'mt-8' : 'mt-10' }}">
+                                                @include('welcome.templates.' . $group['template'], ['group' => $group])
+                                            </div>
+                                        @endforeach
+                                        <div class="mt-8 flex justify-end">
+                                            <button type="button" class="cw-thin text-[11px] uppercase tracking-[0.2em] text-black/40 hover:text-black" data-testid="collapse-btn" @click.stop="collapse()">close</button>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+
+                        <button type="button" class="cw-thin mt-6 self-center text-[10px] uppercase tracking-[0.3em] text-white/30 transition hover:text-white/70" data-testid="esc-hint" @click="collapse()">esc to go back</button>
                     </div>
 
                     <!-- Wheel -->
@@ -480,7 +336,9 @@
         <div id="root"></div>
 
         <script>
-            function conradWorks() {
+            // Expose the component explicitly on window so Alpine can resolve it reliably
+            // regardless of script/module scope or browser execution context.
+            window.conradWorks = function conradWorks() {
                 const ROLES = @json($roles);
 
                 const REPEATS = 7;
@@ -490,16 +348,12 @@
                     loopedRoles: [],
                     centerIndex: 0,
                     expandedIndex: null,
+                    expandedKey: null,
                     isCollapsing: false,
                     halfViewport: 0,
                     itemHeight: 0,
                     _scrollAf: null,
                     _rebalanceLock: false,
-
-                    get expanded() {
-                        if (this.expandedIndex === null) return null;
-                        return this.loopedRoles[this.expandedIndex];
-                    },
 
                     init() {
                         if (this._inited) return;
@@ -518,7 +372,7 @@
                         });
                         this._onResize = () => this._measure();
                         this._onKeyDown = (e) => {
-                            if (this.expandedIndex !== null) {
+                            if (this.expandedKey !== null) {
                                 if (e.key === 'Escape') this.collapse();
                                 return;
                             }
@@ -613,15 +467,19 @@
                     },
 
                     expand(i) {
+                        const role = this.loopedRoles[i];
+                        if (!role) return;
                         this.isCollapsing = false;
                         this.expandedIndex = i;
+                        this.expandedKey = role.key;
                     },
 
                     collapse() {
-                        if (this.expandedIndex === null) return;
+                        if (this.expandedKey === null) return;
                         const prev = this.expandedIndex;
                         this.isCollapsing = true;
                         setTimeout(() => {
+                            this.expandedKey = null;
                             this.expandedIndex = null;
                             this.isCollapsing = false;
                             this.$nextTick(() => {
@@ -650,7 +508,7 @@
                     scrollToKey(key) {
                         const idx = this.getGlobalIndex(key);
                         if (idx < 0) return;
-                        if (this.expandedIndex !== null) this.expandedIndex = idx;
+                        if (this.expandedKey !== null) { this.expandedIndex = idx; this.expandedKey = key; }
                         else this._scrollToIndex(idx, true);
                     }
                 };
