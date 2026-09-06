@@ -14,29 +14,29 @@ final class RoleRepresentativeModels
     {
         return [
             'human' => [
-                ['model' => Habit::class, 'label' => 'Habits'],
+                ['model' => Habit::class, 'label' => 'Habits', 'template' => 'habit-grid'],
             ],
             'husband' => [
-                ['model' => WifeMessage::class, 'label' => 'Wife Messages'],
+                ['model' => WifeMessage::class, 'label' => 'Wife Messages', 'template' => 'letters'],
             ],
             'father' => [
-                ['model' => DaughterMessage::class, 'label' => 'Daughter Messages'],
+                ['model' => DaughterMessage::class, 'label' => 'Daughter Messages', 'template' => 'life-timeline'],
             ],
             'consultant' => [
-                ['model' => BookableSlot::class, 'label' => 'Bookable Slots'],
+                ['model' => BookableSlot::class, 'label' => 'Bookable Slots', 'template' => 'calendar'],
             ],
             'entrepreneur' => [
-                ['model' => Venture::class, 'label' => 'Ventures'],
+                ['model' => Venture::class, 'label' => 'Ventures', 'template' => 'ventures'],
             ],
             'writer' => [
-                ['model' => Book::class, 'label' => 'Books'],
-                ['model' => Article::class, 'label' => 'Articles'],
+                ['model' => Book::class, 'label' => 'Books', 'template' => 'bookshelf'],
+                ['model' => Article::class, 'label' => 'Articles', 'template' => 'editorial-index'],
             ],
             'trainer' => [
-                ['model' => Course::class, 'label' => 'Courses'],
+                ['model' => Course::class, 'label' => 'Courses', 'template' => 'course-catalogue'],
             ],
             'songwriter' => [
-                ['model' => Song::class, 'label' => 'Songs'],
+                ['model' => Song::class, 'label' => 'Songs', 'template' => 'track-library'],
             ],
         ];
     }

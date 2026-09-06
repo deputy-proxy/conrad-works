@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\{Article,Book,BookableSlot,Course,DaughterMessage,Habit,HabitCompletion,MyRole,Song,Venture,WifeMessage};
 use App\Support\RoleRepresentativeModels;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -13,28 +12,28 @@ class WelcomeController extends Controller
 {
     public function __invoke(): View
     {
-        $user = auth()->user() ?: User::query()->first();
+        // Conrad.Works is a single-user portfolio. The public index is rooted in
+        // MyRole configuration and deliberately has no authentication dependency.
         $roles = MyRole::query()
-            ->where('user_id', $user?->id ?? 0)
             ->where('is_active', true)
             ->with('representativeModels')
             ->orderBy('sort_order')
             ->get()
-            ->map(fn (MyRole $role) => $this->roleViewData($role, $user))
+            ->map(fn (MyRole $role) => $this->roleViewData($role))
             ->values()
             ->all();
 
         return view('welcome', compact('roles'));
     }
 
-    private function roleViewData(MyRole $role, ?User $user): array
+    private function roleViewData(MyRole $role): array
     {
         // The role key is authoritative. Representative rows are metadata only,
         // so stale data can never make Human render Ventures, etc.
         $definitions = RoleRepresentativeModels::forRole($role->key);
 
         $representatives = collect($definitions)
-            ->map(function (array $definition) use ($role, $user) {
+            ->map(function (array $definition) use ($role) {
                 $stored = $role->representativeModels->first(
                     fn ($representative) => $representative->model_type === $definition['model']
                 );
@@ -42,8 +41,7 @@ class WelcomeController extends Controller
                 return $this->representativeGroup(
                     $definition['model'],
                     $stored?->label ?: $definition['label'],
-                    $stored?->template,
-                    $user
+                    $stored?->template ?: $definition['template']
                 );
             })
             ->filter()
@@ -65,15 +63,17 @@ class WelcomeController extends Controller
         ];
     }
 
-    private function representativeGroup(string $modelClass, ?string $label, ?string $template, ?User $user): ?array
+    private function representativeGroup(string $modelClass, ?string $label, ?string $template): ?array
     {
         $definition = RoleRepresentativeModels::definition($modelClass);
 
-        if (! $user || ! $definition || ! is_a($modelClass, Model::class, true)) {
+        if (! $definition || ! is_a($modelClass, Model::class, true)) {
             return null;
         }
 
-        $query = $modelClass::query()->where('user_id', $user->id);
+        // This is a single-user application. The public portfolio is not
+        // filtered by authentication or user_id.
+        $query = $modelClass::query();
         $defaultLabel = $definition['label'];
 
         if ($modelClass === Habit::class) {
