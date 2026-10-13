@@ -53,7 +53,9 @@ class CourseResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => CourseResource\Pages\ListCourses::route('/')
+            'index' => CourseResource\\Pages\\ListCourses::route('/'),
+            'create' => CourseResource\\Pages\\CreateCourse::route('/create'),
+            'edit' => CourseResource\\Pages\\EditCourse::route('/{record}/edit'),
         ];
     }
 }
