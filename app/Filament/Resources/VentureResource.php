@@ -55,7 +55,9 @@ class VentureResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => VentureResource\Pages\ListVentures::route('/')
+            'index' => VentureResource\Pages\ListVentures::route('/'),
+            'create' => VentureResource\Pages\CreateVenture::route('/create'),
+            'edit' => VentureResource\Pages\EditVenture::route('/{record}/edit'),
         ];
     }
 }

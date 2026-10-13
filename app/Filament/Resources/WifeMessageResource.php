@@ -51,7 +51,9 @@ class WifeMessageResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => WifeMessageResource\Pages\ListWifeMessages::route('/')
+            'index' => WifeMessageResource\Pages\ListWifeMessages::route('/'),
+            'create' => WifeMessageResource\Pages\CreateWifeMessage::route('/create'),
+            'edit' => WifeMessageResource\Pages\EditWifeMessage::route('/{record}/edit'),
         ];
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Models\Booking;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 use Filament\Actions;
 use Filament\Schemas\Schema;
@@ -28,11 +27,11 @@ class BookingResource extends OwnedResource
         return $schema->components([
             Select::make('bookable_slot_id')
                 ->label('Bookable slot')
-                ->relationship('bookableSlot', 'starts_at', fn (Builder $query) => $query->where('user_id', auth()->id()))
+                ->relationship('bookableSlot', 'starts_at')
                 ->searchable()
                 ->preload()
                 ->required()
-                ->rules(fn (): array => [Rule::exists('bookable_slots', 'id')->where('user_id', auth()->id())]),
+                ->rules([Rule::exists('bookable_slots', 'id')]),
             TextInput::make('name')->label('Name')->required(),
             TextInput::make('email')->label('Email')->required(),
             Textarea::make('notes')->label('Notes'),
@@ -60,7 +59,9 @@ class BookingResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => BookingResource\Pages\ListBookings::route('/')
+            'index' => BookingResource\Pages\ListBookings::route('/'),
+            'create' => BookingResource\Pages\CreateBooking::route('/create'),
+            'edit' => BookingResource\Pages\EditBooking::route('/{record}/edit'),
         ];
     }
 }

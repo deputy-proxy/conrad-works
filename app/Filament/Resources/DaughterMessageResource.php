@@ -51,7 +51,9 @@ class DaughterMessageResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => DaughterMessageResource\Pages\ListDaughterMessages::route('/')
+            'index' => DaughterMessageResource\Pages\ListDaughterMessages::route('/'),
+            'create' => DaughterMessageResource\Pages\CreateDaughterMessage::route('/create'),
+            'edit' => DaughterMessageResource\Pages\EditDaughterMessage::route('/{record}/edit'),
         ];
     }
 }

@@ -6,57 +6,22 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Shared authorization boundary for user-owned resources and their child records.
+ * Authorization rules for the single-user application's records.
+ *
+ * Ownership columns are retained for data integrity and create-time defaults,
+ * but historical owner IDs do not restrict the sole authenticated user.
  */
 class OwnedResourcePolicy
 {
-    public function viewAny(User $user): bool
-    {
-        return true;
-    }
+    public function viewAny(User $user): bool { return true; }
 
-    public function view(User $user, Model $record): bool
-    {
-        return $this->isOwnedBy($user, $record);
-    }
+    public function view(User $user, Model $record): bool { return true; }
 
-    public function create(User $user): bool
-    {
-        return true;
-    }
+    public function create(User $user): bool { return true; }
 
-    public function update(User $user, Model $record): bool
-    {
-        return $this->isOwnedBy($user, $record);
-    }
+    public function update(User $user, Model $record): bool { return true; }
 
-    public function delete(User $user, Model $record): bool
-    {
-        return $this->isOwnedBy($user, $record);
-    }
+    public function delete(User $user, Model $record): bool { return true; }
 
-    /**
-     * Bulk actions are safe because the resource query is owner-scoped as well.
-     */
-    public function deleteAny(User $user): bool
-    {
-        return true;
-    }
-
-    protected function isOwnedBy(User $user, Model $record): bool
-    {
-        if (method_exists($record, 'user')) {
-            return (string) $record->getAttribute('user_id') === (string) $user->getKey();
-        }
-
-        foreach (['habit', 'bookableSlot'] as $relationship) {
-            if (method_exists($record, $relationship)) {
-                return $record->{$relationship}()
-                    ->whereHas('user', fn ($query) => $query->whereKey($user->getKey()))
-                    ->exists();
-            }
-        }
-
-        return false;
-    }
+    public function deleteAny(User $user): bool { return true; }
 }
