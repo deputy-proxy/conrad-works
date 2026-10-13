@@ -34,6 +34,10 @@
                 --cw-border-strong: #3a3a3a;
             }
             html, body {
+                height: 100vh;
+                height: 100svh;
+                overflow: hidden;
+                overscroll-behavior: none;
                 background: #000000 !important;
                 color: #ffffff !important;
                 font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
@@ -87,11 +91,19 @@
             .rich-card { background:#ffffff; color:#000000; border-radius:18px; }
             .rich-card .mini-card { border:1px solid rgba(0,0,0,.12); border-radius:12px; }
             .rich-scroll {
-                max-height: calc(100vh - 8rem);
+                max-height: calc(100vh - 12rem);
+                max-height: calc(100svh - 12rem);
+                min-height: 0;
                 overflow-y: auto;
                 overscroll-behavior: contain;
                 scrollbar-width: thin;
                 scrollbar-color: rgba(0,0,0,0.25) transparent;
+            }
+            @media (max-width: 767px) {
+                .rich-scroll {
+                    max-height: calc(100vh - 15rem);
+                    max-height: calc(100svh - 15rem);
+                }
             }
             .rich-scroll::-webkit-scrollbar { width: 6px; }
             .rich-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
@@ -145,13 +157,13 @@
             #root { display: contents; }
         </style>
     </head>
-    <body class="grain min-h-screen">
+    <body class="grain h-[100vh] h-[100svh] overflow-hidden">
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div
             x-data="conradWorks()"
             x-init="init()"
             x-cloak
-            class="relative min-h-screen w-full"
+            class="relative h-[100vh] h-[100svh] w-full overflow-hidden"
         >
             <!-- Top-left brand -->
             <header
@@ -213,7 +225,7 @@
 
             <!-- Main layout -->
             <main
-                class="relative z-10 mx-auto grid min-h-screen w-full max-w-[1400px] grid-cols-1 gap-8 px-6 py-24 md:grid-cols-[minmax(0,1fr)_minmax(0,2.1fr)] md:gap-16 md:px-12 md:py-0"
+                class="relative z-10 mx-auto grid h-[100vh] h-[100svh] w-full max-w-[1400px] grid-cols-1 gap-8 overflow-hidden px-6 pt-24 pb-20 md:grid-cols-[minmax(0,1fr)_minmax(0,2.1fr)] md:gap-16 md:px-12 md:py-0"
             >
                 <!-- Left: tagline -->
                 <aside class="order-2 hidden items-center md:order-1 md:flex" aria-hidden="true">
@@ -232,20 +244,20 @@
                 </aside>
 
                 <!-- Right: wheel / expanded -->
-                <section class="order-1 relative flex min-h-screen w-full items-center justify-center md:order-2">
+                <section class="order-1 relative flex h-full min-h-0 w-full items-center justify-center md:order-2">
 
                     <!-- Expanded panel: Alpine only controls which server-rendered panel is visible. -->
                     <div
                         x-show="expandedKey !== null"
                         :class="isCollapsing ? 'fade-down' : 'fade-up'"
-                        class="absolute inset-0 flex flex-col items-stretch justify-center gap-6 px-2 py-12 md:px-0"
+                        class="absolute inset-0 flex min-h-0 flex-col items-stretch justify-center gap-6 overflow-hidden px-2 py-12 md:px-0"
                         data-testid="expanded-view"
                         style="display:none"
                     >
                         @foreach($roles as $role)
                             <div
                                 x-show="expandedKey === @js($role['key'])"
-                                class="role-row is-expanded grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6 content-center"
+                                class="role-row is-expanded grid min-h-0 grid-cols-1 content-center gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
                             >
                                 <div class="role-label pt-1 text-left cw-serif text-[13px] italic md:pt-6 md:text-right md:text-[25px]">
                                     <span>as {{ $role['article'] }} </span><span class="keyword">{{ $role['label'] }}</span>
@@ -283,11 +295,11 @@
                     <div
                         x-show="expandedIndex === null && !isCollapsing"
                         x-transition.opacity
-                        class="wheel-mask relative h-[85vh] w-full overflow-hidden"
+                        class="wheel-mask relative h-full min-h-0 w-full overflow-hidden"
                     >
                         <div
                             x-ref="wheel"
-                            class="wheel-scroll h-full w-full overflow-y-auto"
+                            class="wheel-scroll h-full min-h-0 w-full overflow-y-auto"
                             @scroll.passive="onScroll()"
                             data-testid="wheel-container"
                         >
