@@ -54,7 +54,9 @@ class ArticleResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => ArticleResource\Pages\ListArticles::route('/')
+            'index' => ArticleResource\\Pages\\ListArticles::route('/'),
+            'create' => ArticleResource\\Pages\\CreateArticle::route('/create'),
+            'edit' => ArticleResource\\Pages\\EditArticle::route('/{record}/edit'),
         ];
     }
 }
