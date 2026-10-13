@@ -51,7 +51,9 @@ class BookableSlotResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => BookableSlotResource\Pages\ListBookableSlots::route('/')
+            'index' => BookableSlotResource\\Pages\\ListBookableSlots::route('/'),
+            'create' => BookableSlotResource\\Pages\\CreateBookableSlot::route('/create'),
+            'edit' => BookableSlotResource\\Pages\\EditBookableSlot::route('/{record}/edit'),
         ];
     }
 }
