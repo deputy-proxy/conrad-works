@@ -239,18 +239,17 @@
                         </g>
                     </svg>
 
-                    <span class="cw-brand text-[17px] tracking-tight">
-                        Conrad<span class="opacity-60">.</span>Works
+                    <span class="flex items-baseline gap-0 text-[17px] tracking-tight whitespace-nowrap">
+                        <span class="cw-brand">Conrad<span class="opacity-60">.</span>Works</span><span
+                            x-show="expandedKey !== null"
+                            x-cloak
+                            :key="brandPathKey"
+                            :class="brandPathAnimating ? 'brand-path-enter' : ''"
+                            class="text-[17px] leading-none tracking-tight md:hidden"
+                            data-testid="mobile-brand-path"
+                            aria-live="polite"
+                        ><span class="text-white/35">/as/</span><span class="text-white/35" x-text="brandPathArticle + '/'"></span><span class="cw-serif italic text-white" x-text="brandPathRole"></span></span>
                     </span>
-                    <span
-                        x-show="expandedKey !== null"
-                        x-cloak
-                        :key="brandPathKey"
-                        :class="brandPathAnimating ? 'brand-path-enter' : ''"
-                        class="block text-[11px] leading-tight tracking-[0.04em] md:hidden"
-                        data-testid="mobile-brand-path"
-                        aria-live="polite"
-                    ><span class="text-white/35">/as/</span><span class="text-white/35" x-text="brandPathArticle + '/'"></span><span class="cw-serif text-[14px] italic text-white" x-text="brandPathRole"></span></span>
                 </a>
 
                 <nav class="pointer-events-auto hidden items-center gap-6 text-xs text-white/50 md:flex">
