@@ -263,8 +263,9 @@
 
                 <nav class="pointer-events-auto hidden items-center gap-6 text-xs text-white/50 md:flex">
                     <button type="button" class="link-underline hover:text-white" data-testid="nav-about" @click="scrollToKey('human')">about</button>
-                    <button type="button" class="link-underline hover:text-white" data-testid="nav-work" @click="scrollToKey('entrepreneur')">work</button>
                     <button type="button" class="link-underline hover:text-white" data-testid="nav-words" @click="scrollToKey('writer')">words</button>
+                    <button type="button" class="link-underline hover:text-white" data-testid="nav-work" @click="scrollToKey('entrepreneur')">work</button>
+                    <button type="button" class="link-underline hover:text-white" data-testid="nav-contact" @click="scrollToKey('consultant')">contact</button>
                 </nav>
             </header>
 
