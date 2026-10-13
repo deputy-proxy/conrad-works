@@ -3,7 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Models\Booking;
-use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
 use Filament\Actions;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
@@ -16,7 +17,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class BookingResource extends Resource
+class BookingResource extends OwnedResource
 {
     protected static ?string $model = Booking::class;
     protected static string | \UnitEnum | null $navigationGroup = 'Professional';
@@ -25,6 +26,13 @@ class BookingResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
+            Select::make('bookable_slot_id')
+                ->label('Bookable slot')
+                ->relationship('bookableSlot', 'starts_at', fn (Builder $query) => $query->where('user_id', auth()->id()))
+                ->searchable()
+                ->preload()
+                ->required()
+                ->rules(fn (): array => [Rule::exists('bookable_slots', 'id')->where('user_id', auth()->id())]),
             TextInput::make('name')->label('Name')->required(),
             TextInput::make('email')->label('Email')->required(),
             Textarea::make('notes')->label('Notes'),

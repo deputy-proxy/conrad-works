@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Models\Book;
-use Filament\Resources\Resource;
 use Filament\Actions;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
@@ -16,7 +15,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class BookResource extends Resource
+class BookResource extends OwnedResource
 {
     protected static ?string $model = Book::class;
     protected static string | \UnitEnum | null $navigationGroup = 'Creative';
