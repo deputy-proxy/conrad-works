@@ -250,7 +250,7 @@
                         class="block text-[11px] leading-tight tracking-[0.04em] md:hidden"
                         data-testid="mobile-brand-path"
                         aria-live="polite"
-                    ><span class="text-white/35">/as/</span><span class="cw-serif text-[14px] italic text-white" x-text="brandPathRole"></span></span>
+                    ><span class="text-white/35">/as/</span><span class="text-white/35" x-text="brandPathArticle + '/'"></span><span class="cw-serif text-[14px] italic text-white" x-text="brandPathRole"></span></span>
                 </a>
 
                 <nav class="pointer-events-auto hidden items-center gap-6 text-xs text-white/50 md:flex">
@@ -412,6 +412,7 @@
                     centerIndex: 0,
                     expandedIndex: null,
                     expandedKey: null,
+                    brandPathArticle: '',
                     brandPathRole: '',
                     brandPathKey: 0,
                     brandPathAnimating: false,
@@ -553,7 +554,8 @@
                         this.isCollapsing = false;
                         this.expandedIndex = i;
                         this.expandedKey = role.key;
-                        this.brandPathRole = role.key.replace(/-/g, ' ');
+                        this.brandPathArticle = role.article;
+                        this.brandPathRole = role.label;
                         this.brandPathKey++;
                         this.brandPathAnimating = true;
                         clearTimeout(this._brandPathTimer);
@@ -569,6 +571,7 @@
                         setTimeout(() => {
                             this.expandedKey = null;
                             this.expandedIndex = null;
+                            this.brandPathArticle = '';
                             this.brandPathRole = '';
                             this.brandPathKey++;
                             this.brandPathAnimating = true;
