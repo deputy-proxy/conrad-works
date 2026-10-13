@@ -157,6 +157,19 @@
             .link-underline:hover::after { right: 0; }
 
             .logo-mark { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; letter-spacing: -0.02em; }
+            .brand-path-enter { animation: brandPathReveal 480ms cubic-bezier(.2,.8,.2,1) both; }
+            .brand-path-leave { animation: brandPathConceal 320ms cubic-bezier(.4,0,.2,1) both; }
+            @keyframes brandPathReveal {
+                from { opacity: 0; transform: translateY(-5px); filter: blur(3px); }
+                to { opacity: 1; transform: translateY(0); filter: blur(0); }
+            }
+            @keyframes brandPathConceal {
+                from { opacity: 0; transform: translateY(4px); filter: blur(2px); }
+                to { opacity: 1; transform: translateY(0); filter: blur(0); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .brand-path-enter, .brand-path-leave { animation-duration: 1ms; }
+            }
 
             button {
                 background: transparent;
@@ -229,6 +242,15 @@
                     <span class="cw-brand text-[17px] tracking-tight">
                         Conrad<span class="opacity-60">.</span>Works
                     </span>
+                    <span
+                        x-show="expandedKey !== null"
+                        x-cloak
+                        :key="brandPathKey"
+                        :class="brandPathAnimating ? 'brand-path-enter' : ''"
+                        class="block text-[11px] leading-tight tracking-[0.04em] md:hidden"
+                        data-testid="mobile-brand-path"
+                        aria-live="polite"
+                    ><span class="text-white/35">/as/</span><span class="text-white/35" x-text="brandPathArticle + '/'"></span><span class="cw-serif text-[14px] italic text-white" x-text="brandPathRole"></span></span>
                 </a>
 
                 <nav class="pointer-events-auto hidden items-center gap-6 text-xs text-white/50 md:flex">
@@ -390,6 +412,11 @@
                     centerIndex: 0,
                     expandedIndex: null,
                     expandedKey: null,
+                    brandPathArticle: '',
+                    brandPathRole: '',
+                    brandPathKey: 0,
+                    brandPathAnimating: false,
+                    _brandPathTimer: null,
                     isCollapsing: false,
                     introVisible: true,
                     introFadingOut: false,
@@ -527,6 +554,14 @@
                         this.isCollapsing = false;
                         this.expandedIndex = i;
                         this.expandedKey = role.key;
+                        this.brandPathArticle = role.article;
+                        this.brandPathRole = role.label;
+                        this.brandPathKey++;
+                        this.brandPathAnimating = true;
+                        clearTimeout(this._brandPathTimer);
+                        this._brandPathTimer = setTimeout(() => {
+                            this.brandPathAnimating = false;
+                        }, 500);
                     },
 
                     collapse() {
@@ -536,6 +571,14 @@
                         setTimeout(() => {
                             this.expandedKey = null;
                             this.expandedIndex = null;
+                            this.brandPathArticle = '';
+                            this.brandPathRole = '';
+                            this.brandPathKey++;
+                            this.brandPathAnimating = true;
+                            clearTimeout(this._brandPathTimer);
+                            this._brandPathTimer = setTimeout(() => {
+                                this.brandPathAnimating = false;
+                            }, 350);
                             this.isCollapsing = false;
                             this.$nextTick(() => {
                                 this._measure();
