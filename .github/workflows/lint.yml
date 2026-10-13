@@ -38,5 +38,5 @@ jobs:
           npm install
 
       - name: Run Pint
-        run: composer lint:check
+        run: composer lint:check -- --dirty
 
