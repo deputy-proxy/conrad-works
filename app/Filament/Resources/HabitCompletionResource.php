@@ -56,7 +56,9 @@ class HabitCompletionResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => HabitCompletionResource\Pages\ListHabitCompletions::route('/')
+            'index' => HabitCompletionResource\Pages\ListHabitCompletions::route('/'),
+            'create' => HabitCompletionResource\Pages\CreateHabitCompletion::route('/create'),
+            'edit' => HabitCompletionResource\Pages\EditHabitCompletion::route('/{record}/edit'),
         ];
     }
 }
