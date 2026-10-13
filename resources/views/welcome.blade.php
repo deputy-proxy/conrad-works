@@ -615,8 +615,7 @@
                     scrollToKey(key) {
                         const idx = this.getGlobalIndex(key);
                         if (idx < 0) return;
-                        if (this.expandedKey !== null) { this.expandedIndex = idx; this.expandedKey = key; }
-                        else this._scrollToIndex(idx, true);
+                        this.expand(idx);
                     }
                 };
             }
