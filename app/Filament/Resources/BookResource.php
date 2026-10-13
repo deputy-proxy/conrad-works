@@ -54,7 +54,9 @@ class BookResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => BookResource\Pages\ListBooks::route('/')
+            'index' => BookResource\\Pages\\ListBooks::route('/'),
+            'create' => BookResource\\Pages\\CreateBook::route('/create'),
+            'edit' => BookResource\\Pages\\EditBook::route('/{record}/edit'),
         ];
     }
 }
