@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Models\DaughterMessage;
-use Filament\Resources\Resource;
 use Filament\Actions;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
@@ -16,7 +15,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class DaughterMessageResource extends Resource
+class DaughterMessageResource extends OwnedResource
 {
     protected static ?string $model = DaughterMessage::class;
     protected static string | \UnitEnum | null $navigationGroup = 'Personal';

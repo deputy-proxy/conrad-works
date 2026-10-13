@@ -3,7 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Models\HabitCompletion;
-use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
 use Filament\Actions;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
@@ -16,7 +17,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class HabitCompletionResource extends Resource
+class HabitCompletionResource extends OwnedResource
 {
     protected static ?string $model = HabitCompletion::class;
     protected static string | \UnitEnum | null $navigationGroup = 'Creative';
@@ -25,7 +26,13 @@ class HabitCompletionResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('habit_id')->label('Habit ID')->required(),
+            Select::make('habit_id')
+                ->label('Habit')
+                ->relationship('habit', 'name', fn (Builder $query) => $query->where('user_id', auth()->id()))
+                ->searchable()
+                ->preload()
+                ->required()
+                ->rules(fn (): array => [Rule::exists('habits', 'id')->where('user_id', auth()->id())]),
             DatePicker::make('completed_on')->label('Completed on')->required(),
             Textarea::make('notes')->label('Notes')
         ]);

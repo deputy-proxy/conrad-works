@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Models\Article;
-use Filament\Resources\Resource;
 use Filament\Actions;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
@@ -16,7 +15,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class ArticleResource extends Resource
+class ArticleResource extends OwnedResource
 {
     protected static ?string $model = Article::class;
     protected static string | \UnitEnum | null $navigationGroup = 'Creative';
