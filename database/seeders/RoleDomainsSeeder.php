@@ -18,7 +18,6 @@ use App\Models\Venture;
 use App\Models\WifeMessage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Hash;
 
 class RoleDomainsSeeder extends Seeder
 {
@@ -27,10 +26,20 @@ class RoleDomainsSeeder extends Seeder
         $user = User::query()->first();
 
         if (! $user) {
+            $ownerName = env('OWNER_NAME');
+            $ownerEmail = env('OWNER_EMAIL');
+            $ownerPassword = env('OWNER_PASSWORD');
+
+            if (blank($ownerName) || blank($ownerEmail) || blank($ownerPassword)) {
+                throw new \RuntimeException(
+                    'No owner account exists. Set OWNER_NAME, OWNER_EMAIL, and OWNER_PASSWORD before seeding.'
+                );
+            }
+
             $user = User::create([
-                'name' => 'Owner',
-                'email' => 'owner@example.com',
-                'password' => Hash::make('password'),
+                'name' => $ownerName,
+                'email' => $ownerEmail,
+                'password' => $ownerPassword,
             ]);
         }
 
