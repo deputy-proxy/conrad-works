@@ -242,7 +242,7 @@
             <div
                 x-show="introVisible"
                 :class="introFadingOut ? 'intro-fade-out' : 'intro-reveal'"
-                class="pointer-events-none fixed inset-0 z-10 flex items-center justify-center px-8 text-center"
+                class="pointer-events-none fixed inset-0 z-[15] flex items-center justify-center bg-black px-8 text-center"
                 data-testid="intro-reveal"
                 aria-live="polite"
             >
