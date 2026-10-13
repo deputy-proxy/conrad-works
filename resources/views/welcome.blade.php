@@ -101,8 +101,17 @@
             }
             @media (max-width: 767px) {
                 .rich-scroll {
-                    max-height: calc(100vh - 15rem);
-                    max-height: calc(100svh - 15rem);
+                    max-height: none;
+                    height: 100%;
+                }
+                .expanded-role-row {
+                    height: 100%;
+                    align-content: stretch;
+                }
+                .expanded-role-row .rich-scroll {
+                    min-height: 0;
+                    height: 100%;
+                    max-height: none;
                 }
             }
             .rich-scroll::-webkit-scrollbar { width: 6px; }
@@ -300,16 +309,16 @@
                     <div
                         x-show="expandedKey !== null"
                         :class="isCollapsing ? 'fade-down' : 'fade-up'"
-                        class="absolute inset-0 flex min-h-0 flex-col items-stretch justify-center gap-6 overflow-hidden px-2 py-12 md:px-0"
+                        class="absolute inset-0 flex min-h-0 flex-col items-stretch justify-center gap-6 overflow-hidden px-2 py-4 md:px-0 md:py-12"
                         data-testid="expanded-view"
                         style="display:none"
                     >
                         @foreach($roles as $role)
                             <div
                                 x-show="expandedKey === @js($role['key'])"
-                                class="role-row is-expanded grid min-h-0 grid-cols-1 content-center gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+                                class="role-row is-expanded expanded-role-row grid min-h-0 grid-cols-1 content-center gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
                             >
-                                <div class="role-label pt-1 text-left cw-serif text-[13px] italic md:pt-6 md:text-right md:text-[25px]">
+                                <div class="role-label hidden pt-1 text-left cw-serif text-[13px] italic md:block md:pt-6 md:text-right md:text-[25px]">
                                     <span>as {{ $role['article'] }} </span><span class="keyword">{{ $role['label'] }}</span>
                                 </div>
 
@@ -318,7 +327,7 @@
                                         {{ $role['content'] }}
                                     </button>
                                 @else
-                                    <div class="rich-card rich-scroll w-full cursor-pointer p-8" data-testid="role-open-{{ $role['key'] }}" @click.self="collapse()">
+                                    <div class="rich-card rich-scroll w-full cursor-pointer p-8 md:h-auto" data-testid="role-open-{{ $role['key'] }}" @click.self="collapse()">
                                         <h3 class="cw-card-h3 text-[20px] tracking-tight">{{ $role['title'] }}</h3>
                                         @if(count($role['description']))
                                             <div class="mt-3 space-y-1 text-[13px] leading-relaxed text-black/70">
@@ -338,7 +347,7 @@
                             </div>
                         @endforeach
 
-                        <button type="button" class="cw-thin mt-6 self-center text-[10px] uppercase tracking-[0.3em] text-white/30 transition hover:text-white/70" data-testid="esc-hint" @click="collapse()">esc to go back</button>
+                        <button type="button" class="cw-thin mt-3 self-center text-[10px] uppercase tracking-[0.3em] text-white/30 transition hover:text-white/70" data-testid="esc-hint" @click="collapse()">back to all roles</button>
                     </div>
 
                     <!-- Wheel -->
