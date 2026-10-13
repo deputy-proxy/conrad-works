@@ -54,7 +54,9 @@ class SongResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => SongResource\Pages\ListSongs::route('/')
+            'index' => SongResource\Pages\ListSongs::route('/'),
+            'create' => SongResource\Pages\CreateSong::route('/create'),
+            'edit' => SongResource\Pages\EditSong::route('/{record}/edit'),
         ];
     }
 }
