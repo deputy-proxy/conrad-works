@@ -61,15 +61,15 @@
                 mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
             }
             .wheel-scroll {
-                scroll-snap-type: y mandatory;
+                /* Keep native touch and trackpad scrolling fluid across multiple roles. */
+                scroll-snap-type: none;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
                 overscroll-behavior: contain;
+                -webkit-overflow-scrolling: touch;
             }
             .wheel-scroll::-webkit-scrollbar { display: none; }
             .wheel-item {
-                scroll-snap-align: center;
-                scroll-snap-stop: always;
                 transition: transform 320ms cubic-bezier(.2,.8,.2,1), opacity 320ms cubic-bezier(.2,.8,.2,1);
                 will-change: transform, opacity;
             }
