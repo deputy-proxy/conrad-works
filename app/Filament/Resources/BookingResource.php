@@ -60,7 +60,9 @@ class BookingResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => BookingResource\Pages\ListBookings::route('/')
+            'index' => BookingResource\\Pages\\ListBookings::route('/'),
+            'create' => BookingResource\\Pages\\CreateBooking::route('/create'),
+            'edit' => BookingResource\\Pages\\EditBooking::route('/{record}/edit'),
         ];
     }
 }
