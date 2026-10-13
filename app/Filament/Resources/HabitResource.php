@@ -53,7 +53,9 @@ class HabitResource extends OwnedResource
     public static function getPages(): array
     {
         return [
-            'index' => HabitResource\Pages\ListHabits::route('/')
+            'index' => HabitResource\Pages\ListHabits::route('/'),
+            'create' => HabitResource\Pages\CreateHabit::route('/create'),
+            'edit' => HabitResource\Pages\EditHabit::route('/{record}/edit'),
         ];
     }
 }
