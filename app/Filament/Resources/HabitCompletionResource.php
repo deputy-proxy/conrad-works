@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Models\HabitCompletion;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 use Filament\Actions;
 use Filament\Schemas\Schema;
@@ -28,11 +27,11 @@ class HabitCompletionResource extends OwnedResource
         return $schema->components([
             Select::make('habit_id')
                 ->label('Habit')
-                ->relationship('habit', 'name', fn (Builder $query) => $query->where('user_id', auth()->id()))
+                ->relationship('habit', 'name')
                 ->searchable()
                 ->preload()
                 ->required()
-                ->rules(fn (): array => [Rule::exists('habits', 'id')->where('user_id', auth()->id())]),
+                ->rules([Rule::exists('habits', 'id')]),
             DatePicker::make('completed_on')->label('Completed on')->required(),
             Textarea::make('notes')->label('Notes')
         ]);
