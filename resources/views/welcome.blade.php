@@ -115,6 +115,21 @@
                 background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/></svg>");
             }
 
+            /* ── Intro reveal ── */
+            @keyframes introReveal {
+                from { opacity: 0; transform: translateY(12px); filter: blur(5px); }
+                to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+            }
+            @keyframes introFadeOut {
+                from { opacity: 1; transform: translateY(0); filter: blur(0); }
+                to   { opacity: 0; transform: translateY(-8px); filter: blur(3px); }
+            }
+            .intro-reveal { animation: introReveal 1100ms cubic-bezier(.2,.8,.2,1) both; }
+            .intro-fade-out { animation: introFadeOut 850ms cubic-bezier(.4,0,.2,1) both; }
+            @media (prefers-reduced-motion: reduce) {
+                .intro-reveal, .intro-fade-out { animation-duration: 1ms; }
+            }
+
             /* ── Expand / collapse animations ── */
             @keyframes expandDown {
                 from { opacity:1; clip-path: inset(50% 0 50% 0); }
@@ -167,11 +182,11 @@
         >
             <!-- Top-left brand -->
             <header
-                class="pointer-events-none fixed left-0 top-0 z-20 flex w-full items-start justify-between px-6 py-6 md:px-10"
+                class="pointer-events-none fixed left-0 top-0 z-20 flex w-full items-start justify-center px-6 pt-6 md:justify-between md:px-10 md:py-6"
             >
                 <a
                     href="#"
-                    class="pointer-events-auto flex items-center gap-3"
+                    class="pointer-events-auto flex flex-col items-center gap-2 text-center md:flex-row md:gap-3"
                     data-testid="brand-logo"
                     @click.prevent="collapse()"
                 >
@@ -222,6 +237,20 @@
                     <button type="button" class="link-underline hover:text-white" data-testid="nav-words" @click="scrollToKey('writer')">words</button>
                 </nav>
             </header>
+
+            <!-- Intro tagline: roles are revealed after the opening statement. -->
+            <div
+                x-show="introVisible"
+                :class="introFadingOut ? 'intro-fade-out' : 'intro-reveal'"
+                class="pointer-events-none fixed inset-0 z-[15] flex items-center justify-center bg-black px-8 text-center"
+                data-testid="intro-reveal"
+                aria-live="polite"
+            >
+                <h1 class="cw-h1 cw-serif max-w-3xl text-5xl leading-[0.98] tracking-tight sm:text-6xl md:text-7xl">
+                    I am many <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>,<br class="hidden sm:block" />
+                    <span class="italic" style="color: rgba(255,255,255,0.85)">all at once.</span>
+                </h1>
+            </div>
 
             <!-- Main layout -->
             <main
@@ -293,7 +322,7 @@
 
                     <!-- Wheel -->
                     <div
-                        x-show="expandedIndex === null && !isCollapsing"
+                        x-show="!introVisible && expandedIndex === null && !isCollapsing"
                         x-transition.opacity
                         class="wheel-mask relative h-full min-h-0 w-full overflow-hidden"
                     >
@@ -362,6 +391,10 @@
                     expandedIndex: null,
                     expandedKey: null,
                     isCollapsing: false,
+                    introVisible: true,
+                    introFadingOut: false,
+                    _introFadeTimer: null,
+                    _introHideTimer: null,
                     halfViewport: 0,
                     itemHeight: 0,
                     _scrollAf: null,
@@ -394,6 +427,16 @@
                         };
                         window.addEventListener('resize', this._onResize);
                         window.addEventListener('keydown', this._onKeyDown, { capture: true });
+
+                        const introDelay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1200 : 5000;
+                        this._introFadeTimer = setTimeout(() => {
+                            this.introFadingOut = true;
+                            this._introHideTimer = setTimeout(() => {
+                                this.introVisible = false;
+                                this.introFadingOut = false;
+                                this.$nextTick(() => this._measure());
+                            }, 880);
+                        }, introDelay);
                     },
 
                     _stepBy(delta) {
