@@ -130,8 +130,8 @@
                 to   { opacity: 1; filter: blur(0); }
             }
             @keyframes introRoleReveal {
-                from { opacity: 0; transform: translateY(-24px) scale(var(--role-scale)); filter: blur(4px); }
-                to   { opacity: var(--role-opacity); transform: translateY(0) scale(var(--role-scale)); filter: blur(0); }
+                from { opacity: 0; translate: 0 -24px; filter: blur(4px); }
+                to   { opacity: var(--role-opacity); translate: 0 0; filter: blur(0); }
             }
             .intro-reveal { animation: introReveal 850ms cubic-bezier(.2,.8,.2,1) both; }
             .intro-stage { background-color: #000; transition: background-color 1050ms cubic-bezier(.22,1,.36,1); }
@@ -142,18 +142,19 @@
             .intro-delayed-elements {
                 opacity: 0;
                 visibility: hidden;
-                transition: opacity 600ms cubic-bezier(.2,.8,.2,1), visibility 0s linear 600ms;
+                transition: opacity 900ms cubic-bezier(.16,1,.3,1), visibility 0s linear 900ms;
             }
             .intro-delayed-elements.is-visible {
                 opacity: 1;
                 visibility: visible;
-                transition: opacity 600ms cubic-bezier(.2,.8,.2,1), visibility 0s;
+                transition: opacity 900ms cubic-bezier(.16,1,.3,1), visibility 0s;
             }
-            .intro-role-reveal { animation: introRoleReveal 620ms cubic-bezier(.22,1,.36,1) both; animation-delay: var(--intro-delay, 0ms); }
+            .intro-role-reveal { animation: introRoleReveal 720ms cubic-bezier(.22,1,.36,1) both; animation-delay: var(--intro-delay, 0ms); }
             @media (prefers-reduced-motion: reduce) {
                 .intro-reveal { animation-duration: 1ms; }
                 .intro-stage { transition-duration: 1ms; }
                 .intro-delayed-elements, .intro-delayed-elements.is-visible { transition: opacity 1ms linear, visibility 0s; }
+                .intro-role-reveal { translate: none; }
                 .intro-role-reveal { animation-duration: 1ms; animation-delay: 0ms; }
             }
 
