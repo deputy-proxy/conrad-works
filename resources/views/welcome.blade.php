@@ -139,6 +139,16 @@
             .intro-headline { position: fixed; margin: 0; white-space: nowrap; transform-origin: top left; will-change: font-size, line-height; }
             .intro-target { opacity: 0; transition: opacity 1ms linear; }
             .intro-target.is-ready { opacity: 1; }
+            .intro-delayed-elements {
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 600ms cubic-bezier(.2,.8,.2,1), visibility 0s linear 600ms;
+            }
+            .intro-delayed-elements.is-visible {
+                opacity: 1;
+                visibility: visible;
+                transition: opacity 600ms cubic-bezier(.2,.8,.2,1), visibility 0s;
+            }
             .intro-role-reveal { animation: introRoleReveal 620ms cubic-bezier(.22,1,.36,1) both; animation-delay: var(--intro-delay, 0ms); }
             @media (prefers-reduced-motion: reduce) {
                 .intro-reveal { animation-duration: 1ms; }
@@ -211,7 +221,8 @@
         >
             <!-- Top-left brand -->
             <header
-                class="pointer-events-none fixed left-0 top-0 z-20 flex w-full items-start justify-center px-6 pt-6 md:justify-between md:px-10 md:py-6"
+                class="intro-delayed-elements pointer-events-none fixed left-0 top-0 z-20 flex w-full items-start justify-center px-6 pt-6 md:justify-between md:px-10 md:py-6"
+                :class="pageElementsVisible ? 'is-visible' : ''"
             >
                 <a
                     href="#"
@@ -292,7 +303,8 @@
 
             <!-- Main layout -->
             <main
-                class="relative z-10 mx-auto grid h-[100vh] h-[100svh] w-full max-w-[1400px] grid-cols-1 gap-8 overflow-hidden px-6 pt-24 pb-20 md:grid-cols-[minmax(0,1fr)_minmax(0,2.1fr)] md:gap-16 md:px-12 md:py-0"
+                class="intro-delayed-elements relative z-10 mx-auto grid h-[100vh] h-[100svh] w-full max-w-[1400px] grid-cols-1 gap-8 overflow-hidden px-6 pt-24 pb-20 md:grid-cols-[minmax(0,1fr)_minmax(0,2.1fr)] md:gap-16 md:px-12 md:py-0"
+                :class="pageElementsVisible ? 'is-visible' : ''"
             >
                 <!-- Left: tagline -->
                 <aside class="order-2 hidden items-center md:order-1 md:flex" aria-hidden="true">
@@ -364,7 +376,7 @@
 
                     <!-- Wheel -->
                     <div
-                        x-show="(introTransitioning || introComplete) && expandedIndex === null && !isCollapsing"
+                        x-show="pageElementsVisible && introComplete && expandedIndex === null && !isCollapsing"
                         x-transition.opacity
                         class="wheel-mask relative min-h-0 w-full flex-1 overflow-hidden md:h-full md:flex-none"
                         @after-enter="revealRoles()"
@@ -411,7 +423,10 @@
                 </section>
             </main>
 
-            <footer class="pointer-events-none fixed bottom-0 left-0 z-20 flex w-full items-end justify-between px-6 pb-6 md:px-10">
+            <footer
+                class="intro-delayed-elements pointer-events-none fixed bottom-0 left-0 z-20 flex w-full items-end justify-between px-6 pb-6 md:px-10"
+                :class="pageElementsVisible ? 'is-visible' : ''"
+            >
                 <div class="text-[10px] uppercase tracking-[0.25em] text-white/30">© Conrad.Works</div>
                 <div class="text-[10px] uppercase tracking-[0.25em] text-white/30">ver. 1.0</div>
             </footer>
@@ -443,6 +458,7 @@
                     introVisible: true,
                     introTransitioning: false,
                     introComplete: false,
+                    pageElementsVisible: false,
                     roleRevealActive: false,
                     _roleRevealPlayed: false,
                     _introTimer: null,
@@ -573,6 +589,10 @@
                         this.introVisible = false;
                         this.introTransitioning = false;
                         this._introAnimation = null;
+                        clearTimeout(this._elementsRevealTimer);
+                        this._elementsRevealTimer = setTimeout(() => {
+                            this.pageElementsVisible = true;
+                        }, 2000);
                         this.$nextTick(() => this._measure());
                     },
 
