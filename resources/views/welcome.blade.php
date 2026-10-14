@@ -124,19 +124,26 @@
                 background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/></svg>");
             }
 
-            /* ── Intro reveal ── */
+            /* ── Intro reveal and continuous headline handoff ── */
             @keyframes introReveal {
-                from { opacity: 0; transform: translateY(12px); filter: blur(5px); }
-                to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+                from { opacity: 0; filter: blur(5px); }
+                to   { opacity: 1; filter: blur(0); }
             }
-            @keyframes introFadeOut {
-                from { opacity: 1; transform: translateY(0); filter: blur(0); }
-                to   { opacity: 0; transform: translateY(-8px); filter: blur(3px); }
+            @keyframes introRoleReveal {
+                from { opacity: 0; transform: translateY(12px) scale(var(--role-scale)); filter: blur(3px); }
+                to   { opacity: var(--role-opacity); transform: scale(var(--role-scale)); filter: blur(0); }
             }
-            .intro-reveal { animation: introReveal 1100ms cubic-bezier(.2,.8,.2,1) both; }
-            .intro-fade-out { animation: introFadeOut 850ms cubic-bezier(.4,0,.2,1) both; }
+            .intro-reveal { animation: introReveal 850ms cubic-bezier(.2,.8,.2,1) both; }
+            .intro-stage { background-color: #000; transition: background-color 1050ms cubic-bezier(.22,1,.36,1); }
+            .intro-stage.is-transitioning { background-color: transparent; }
+            .intro-headline { transform-origin: top left; will-change: transform; }
+            .intro-target { opacity: 0; transition: opacity 1ms linear; }
+            .intro-target.is-ready { opacity: 1; }
+            .intro-role-reveal { animation: introRoleReveal 460ms cubic-bezier(.22,1,.36,1) both; animation-delay: var(--intro-delay, 0ms); }
             @media (prefers-reduced-motion: reduce) {
-                .intro-reveal, .intro-fade-out { animation-duration: 1ms; }
+                .intro-reveal { animation-duration: 1ms; }
+                .intro-stage { transition-duration: 1ms; }
+                .intro-role-reveal { animation-duration: 1ms; animation-delay: 0ms; }
             }
 
             /* ── Expand / collapse animations ── */
@@ -272,12 +279,12 @@
             <!-- Intro tagline: roles are revealed after the opening statement. -->
             <div
                 x-show="introVisible"
-                :class="introFadingOut ? 'intro-fade-out' : 'intro-reveal'"
+                :class="['intro-reveal', 'intro-stage', introTransitioning ? 'is-transitioning' : '']"
                 class="pointer-events-none fixed inset-0 z-[15] flex items-center justify-center bg-black px-8 text-center"
                 data-testid="intro-reveal"
-                aria-live="polite"
+                aria-hidden="true"
             >
-                <h1 class="cw-h1 cw-serif max-w-3xl text-5xl leading-[0.98] tracking-tight sm:text-6xl md:text-7xl">
+                <h1 x-ref="introHeadline" class="intro-headline cw-h1 cw-serif max-w-3xl text-5xl leading-[0.98] tracking-tight sm:text-6xl md:text-7xl">
                     I am many <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>,<br class="hidden sm:block" />
                     <span class="italic" style="color: rgba(255,255,255,0.85)">all at once.</span>
                 </h1>
@@ -291,7 +298,7 @@
                 <aside class="order-2 hidden items-center md:order-1 md:flex" aria-hidden="true">
                     <div class="max-w-sm pl-2">
                         <p class="cw-thin cw-serif text-[13px] italic tracking-wide text-white/40">— a portfolio of roles</p>
-                        <h1 class="cw-h1 cw-serif mt-3 text-4xl leading-[1.05] tracking-tight sm:text-5xl">
+                        <h1 x-ref="desktopIntroTarget" :class="introComplete ? 'intro-target is-ready' : 'intro-target'" class="cw-h1 cw-serif mt-3 text-4xl leading-[1.05] tracking-tight sm:text-5xl" data-testid="desktop-intro-target">
                             I am many
                             <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>,
                             <br />
@@ -304,7 +311,11 @@
                 </aside>
 
                 <!-- Right: wheel / expanded -->
-                <section class="order-1 relative flex h-full min-h-0 w-full items-center justify-center md:order-2">
+                <section class="order-1 relative flex h-full min-h-0 w-full flex-col items-center justify-start pt-2 md:order-2 md:justify-center md:pt-0">
+                    <h1 x-ref="mobileIntroTarget" :class="introComplete ? 'intro-target is-ready' : 'intro-target'" class="cw-h1 cw-serif mb-3 w-full text-center text-3xl leading-[1.02] tracking-tight md:hidden" data-testid="mobile-intro-target">
+                        I am many <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>,<br />
+                        <span class="italic" style="color: rgba(255,255,255,0.85)">all at once.</span>
+                    </h1>
 
                     <!-- Expanded panel: Alpine only controls which server-rendered panel is visible. -->
                     <div
@@ -353,9 +364,9 @@
 
                     <!-- Wheel -->
                     <div
-                        x-show="!introVisible && expandedIndex === null && !isCollapsing"
+                        x-show="(introTransitioning || introComplete) && expandedIndex === null && !isCollapsing"
                         x-transition.opacity
-                        class="wheel-mask relative h-full min-h-0 w-full overflow-hidden"
+                        class="wheel-mask relative min-h-0 w-full flex-1 overflow-hidden md:h-full md:flex-none"
                     >
                         <div
                             x-ref="wheel"
@@ -368,6 +379,7 @@
                             <template x-for="(item, i) in loopedRoles" :key="i + '-' + item.key">
                                 <div
                                     class="wheel-item flex items-center justify-center py-3"
+                                    :class="introTransitioning && !introComplete ? 'intro-role-reveal' : ''"
                                     :style="itemStyle(i)"
                                     :data-index="i"
                                 >
@@ -428,9 +440,10 @@
                     _brandPathTimer: null,
                     isCollapsing: false,
                     introVisible: true,
-                    introFadingOut: false,
-                    _introFadeTimer: null,
-                    _introHideTimer: null,
+                    introTransitioning: false,
+                    introComplete: false,
+                    _introTimer: null,
+                    _introAnimation: null,
                     halfViewport: 0,
                     itemHeight: 0,
                     _scrollAf: null,
@@ -443,14 +456,10 @@
                         for (let r = 0; r < REPEATS; r++) {
                             for (const role of ROLES) this.loopedRoles.push(role);
                         }
-                        this.$nextTick(() => {
-                            this._measure();
-                            const middleCopy = Math.floor(REPEATS / 2);
-                            const defaultLocalIdx = ROLES.findIndex(r => r.key === 'entrepreneur');
-                            const startIndex = middleCopy * ROLES.length + defaultLocalIdx;
-                            this._scrollToIndex(startIndex, false);
-                            this.centerIndex = startIndex;
-                        });
+                        const middleCopy = Math.floor(REPEATS / 2);
+                        const defaultLocalIdx = ROLES.findIndex(r => r.key === 'entrepreneur');
+                        this._introStartIndex = middleCopy * ROLES.length + Math.max(0, defaultLocalIdx);
+                        this.centerIndex = this._introStartIndex;
                         this._onResize = () => this._measure();
                         this._onKeyDown = (e) => {
                             if (this.expandedKey !== null) {
@@ -464,15 +473,65 @@
                         window.addEventListener('resize', this._onResize);
                         window.addEventListener('keydown', this._onKeyDown, { capture: true });
 
-                        const introDelay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1200 : 5000;
-                        this._introFadeTimer = setTimeout(() => {
-                            this.introFadingOut = true;
-                            this._introHideTimer = setTimeout(() => {
-                                this.introVisible = false;
-                                this.introFadingOut = false;
-                                this.$nextTick(() => this._measure());
-                            }, 880);
-                        }, introDelay);
+                        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                        this._introTimer = setTimeout(() => this._transitionIntro(reducedMotion), reducedMotion ? 350 : 1250);
+                    },
+
+                    _transitionIntro(reducedMotion) {
+                        if (this.introTransitioning || this.introComplete) return;
+                        this.introTransitioning = true;
+
+                        this.$nextTick(() => {
+                            this._measure();
+                            this._scrollToIndex(this._introStartIndex, false);
+
+                            requestAnimationFrame(() => {
+                                const headline = this.$refs.introHeadline;
+                                const target = window.matchMedia('(min-width: 768px)').matches
+                                    ? this.$refs.desktopIntroTarget
+                                    : this.$refs.mobileIntroTarget;
+
+                                if (!headline || !target) {
+                                    this._finishIntro();
+                                    return;
+                                }
+
+                                const startRect = headline.getBoundingClientRect();
+                                const targetRect = target.getBoundingClientRect();
+                                const startFontSize = parseFloat(getComputedStyle(headline).fontSize) || 72;
+                                const targetFontSize = parseFloat(getComputedStyle(target).fontSize) || 32;
+                                const scale = targetFontSize / startFontSize;
+                                const x = targetRect.left - startRect.left;
+                                const y = targetRect.top - startRect.top;
+                                const duration = reducedMotion ? 1 : 1100;
+
+                                if (typeof headline.animate !== 'function') {
+                                    this._finishIntro();
+                                    return;
+                                }
+
+                                this._introAnimation = headline.animate([
+                                    { transform: 'translate(0px, 0px) scale(1)' },
+                                    { transform: `translate(${x}px, ${y}px) scale(${scale})` },
+                                ], {
+                                    duration,
+                                    easing: 'cubic-bezier(.22,1,.36,1)',
+                                    fill: 'forwards',
+                                });
+
+                                this._introAnimation.onfinish = () => this._finishIntro();
+                                this._introAnimation.oncancel = () => this._finishIntro();
+                            });
+                        });
+                    },
+
+                    _finishIntro() {
+                        if (this.introComplete) return;
+                        this.introComplete = true;
+                        this.introVisible = false;
+                        this.introTransitioning = false;
+                        this._introAnimation = null;
+                        this.$nextTick(() => this._measure());
                     },
 
                     _stepBy(delta) {
@@ -549,7 +608,8 @@
                         const dist = Math.abs(i - this.centerIndex);
                         const scale = Math.max(0.78, 1 - dist * 0.06);
                         const opacity = Math.max(0.25, 1 - dist * 0.18);
-                        return `transform: scale(${scale}); opacity: ${opacity};`;
+                        const introDelay = Math.min(dist, 6) * 90;
+                        return `transform: scale(${scale}); opacity: ${opacity}; --role-scale: ${scale}; --role-opacity: ${opacity}; --intro-delay: ${introDelay}ms;`;
                     },
 
                     onRowClick(i) {
