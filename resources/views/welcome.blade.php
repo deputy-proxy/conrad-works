@@ -587,12 +587,12 @@
                     _finishIntro() {
                         if (this.introComplete) return;
                         this.introComplete = true;
-                        this.introVisible = false;
                         this.introTransitioning = false;
                         this._introAnimation = null;
                         clearTimeout(this._elementsRevealTimer);
                         this._elementsRevealTimer = setTimeout(() => {
                             this.pageElementsVisible = true;
+                            this.introVisible = false;
                         }, 2000);
                         this.$nextTick(() => this._measure());
                     },
