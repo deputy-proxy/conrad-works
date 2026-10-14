@@ -136,7 +136,7 @@
             .intro-reveal { animation: introReveal 850ms cubic-bezier(.2,.8,.2,1) both; }
             .intro-stage { background-color: #000; transition: background-color 1050ms cubic-bezier(.22,1,.36,1); }
             .intro-stage.is-transitioning { background-color: transparent; }
-            .intro-headline { transform-origin: top left; will-change: transform; }
+            .intro-headline { position: fixed; margin: 0; transform-origin: top left; will-change: font-size, line-height; }
             .intro-target { opacity: 0; transition: opacity 1ms linear; }
             .intro-target.is-ready { opacity: 1; }
             .intro-role-reveal { animation: introRoleReveal 460ms cubic-bezier(.22,1,.36,1) both; animation-delay: var(--intro-delay, 0ms); }
@@ -473,8 +473,31 @@
                         window.addEventListener('resize', this._onResize);
                         window.addEventListener('keydown', this._onKeyDown, { capture: true });
 
+                        this.$nextTick(() => requestAnimationFrame(() => this._positionIntroHeadline()));
+
                         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                         this._introTimer = setTimeout(() => this._transitionIntro(reducedMotion), reducedMotion ? 350 : 1250);
+                    },
+
+                    _positionIntroHeadline() {
+                        const headline = this.$refs.introHeadline;
+                        const target = window.matchMedia('(min-width: 768px)').matches
+                            ? this.$refs.desktopIntroTarget
+                            : this.$refs.mobileIntroTarget;
+
+                        if (!headline || !target) return;
+
+                        const rect = target.getBoundingClientRect();
+                        const targetStyle = getComputedStyle(target);
+                        Object.assign(headline.style, {
+                            position: 'fixed',
+                            left: `${rect.left}px`,
+                            top: `${rect.top}px`,
+                            width: `${rect.width}px`,
+                            maxWidth: 'none',
+                            margin: '0',
+                            textAlign: targetStyle.textAlign,
+                        });
                     },
 
                     _transitionIntro(reducedMotion) {
@@ -496,14 +519,16 @@
                                     return;
                                 }
 
-                                const startRect = headline.getBoundingClientRect();
-                                const targetRect = target.getBoundingClientRect();
-                                const startFontSize = parseFloat(getComputedStyle(headline).fontSize) || 72;
-                                const targetFontSize = parseFloat(getComputedStyle(target).fontSize) || 32;
-                                const scale = targetFontSize / startFontSize;
-                                const x = targetRect.left - startRect.left;
-                                const y = targetRect.top - startRect.top;
-                                const duration = reducedMotion ? 1 : 1100;
+                                // Keep the headline anchored to its final location from the start.
+                                // Only its type size (and matching line-height) changes.
+                                this._positionIntroHeadline();
+                                const startStyle = getComputedStyle(headline);
+                                const targetStyle = getComputedStyle(target);
+                                const startFontSize = parseFloat(startStyle.fontSize) || 72;
+                                const targetFontSize = parseFloat(targetStyle.fontSize) || 32;
+                                const startLineHeight = parseFloat(startStyle.lineHeight) || startFontSize;
+                                const targetLineHeight = parseFloat(targetStyle.lineHeight) || targetFontSize;
+                                const duration = reducedMotion ? 1 : 950;
 
                                 if (typeof headline.animate !== 'function') {
                                     this._finishIntro();
@@ -511,11 +536,11 @@
                                 }
 
                                 this._introAnimation = headline.animate([
-                                    { transform: 'translate(0px, 0px) scale(1)' },
-                                    { transform: `translate(${x}px, ${y}px) scale(${scale})` },
+                                    { fontSize: `${startFontSize}px`, lineHeight: `${startLineHeight}px` },
+                                    { fontSize: `${targetFontSize}px`, lineHeight: `${targetLineHeight}px` },
                                 ], {
                                     duration,
-                                    easing: 'cubic-bezier(.22,1,.36,1)',
+                                    easing: 'cubic-bezier(.4,0,.2,1)',
                                     fill: 'forwards',
                                 });
 
