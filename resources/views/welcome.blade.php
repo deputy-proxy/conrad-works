@@ -153,6 +153,7 @@
             @media (prefers-reduced-motion: reduce) {
                 .intro-reveal { animation-duration: 1ms; }
                 .intro-stage { transition-duration: 1ms; }
+                .intro-delayed-elements, .intro-delayed-elements.is-visible { transition: opacity 1ms linear, visibility 0s; }
                 .intro-role-reveal { animation-duration: 1ms; animation-delay: 0ms; }
             }
 
