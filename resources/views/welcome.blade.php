@@ -130,16 +130,16 @@
                 to   { opacity: 1; filter: blur(0); }
             }
             @keyframes introRoleReveal {
-                from { opacity: 0; transform: translateY(12px) scale(var(--role-scale)); filter: blur(3px); }
-                to   { opacity: var(--role-opacity); transform: scale(var(--role-scale)); filter: blur(0); }
+                from { opacity: 0; transform: translateY(-24px) scale(var(--role-scale)); filter: blur(4px); }
+                to   { opacity: var(--role-opacity); transform: translateY(0) scale(var(--role-scale)); filter: blur(0); }
             }
             .intro-reveal { animation: introReveal 850ms cubic-bezier(.2,.8,.2,1) both; }
             .intro-stage { background-color: #000; transition: background-color 1050ms cubic-bezier(.22,1,.36,1); }
             .intro-stage.is-transitioning { background-color: transparent; }
-            .intro-headline { position: fixed; margin: 0; transform-origin: top left; will-change: font-size, line-height; }
+            .intro-headline { position: fixed; margin: 0; white-space: nowrap; transform-origin: top left; will-change: font-size, line-height; }
             .intro-target { opacity: 0; transition: opacity 1ms linear; }
             .intro-target.is-ready { opacity: 1; }
-            .intro-role-reveal { animation: introRoleReveal 460ms cubic-bezier(.22,1,.36,1) both; animation-delay: var(--intro-delay, 0ms); }
+            .intro-role-reveal { animation: introRoleReveal 620ms cubic-bezier(.22,1,.36,1) both; animation-delay: var(--intro-delay, 0ms); }
             @media (prefers-reduced-motion: reduce) {
                 .intro-reveal { animation-duration: 1ms; }
                 .intro-stage { transition-duration: 1ms; }
@@ -285,8 +285,8 @@
                 aria-hidden="true"
             >
                 <h1 x-ref="introHeadline" class="intro-headline cw-h1 cw-serif max-w-3xl text-5xl leading-[0.98] tracking-tight sm:text-6xl md:text-7xl">
-                    I am many <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>,<br class="hidden sm:block" />
-                    <span class="italic" style="color: rgba(255,255,255,0.85)">all at once.</span>
+                    I am many <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>,<br />
+                    <span>all at once.</span>
                 </h1>
             </div>
 
@@ -314,7 +314,7 @@
                 <section class="order-1 relative flex h-full min-h-0 w-full flex-col items-center justify-start pt-2 md:order-2 md:justify-center md:pt-0">
                     <h1 x-ref="mobileIntroTarget" :class="introComplete ? 'intro-target is-ready' : 'intro-target'" class="cw-h1 cw-serif mb-3 w-full text-center text-3xl leading-[1.02] tracking-tight md:hidden" data-testid="mobile-intro-target">
                         I am many <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>,<br />
-                        <span class="italic" style="color: rgba(255,255,255,0.85)">all at once.</span>
+                        <span>all at once.</span>
                     </h1>
 
                     <!-- Expanded panel: Alpine only controls which server-rendered panel is visible. -->
@@ -367,6 +367,7 @@
                         x-show="(introTransitioning || introComplete) && expandedIndex === null && !isCollapsing"
                         x-transition.opacity
                         class="wheel-mask relative min-h-0 w-full flex-1 overflow-hidden md:h-full md:flex-none"
+                        @after-enter="revealRoles()"
                     >
                         <div
                             x-ref="wheel"
@@ -379,7 +380,7 @@
                             <template x-for="(item, i) in loopedRoles" :key="i + '-' + item.key">
                                 <div
                                     class="wheel-item flex items-center justify-center py-3"
-                                    :class="introTransitioning && !introComplete ? 'intro-role-reveal' : ''"
+                                    :class="roleRevealActive ? 'intro-role-reveal' : ''"
                                     :style="itemStyle(i)"
                                     :data-index="i"
                                 >
@@ -442,7 +443,10 @@
                     introVisible: true,
                     introTransitioning: false,
                     introComplete: false,
+                    roleRevealActive: false,
+                    _roleRevealPlayed: false,
                     _introTimer: null,
+                    _roleRevealTimer: null,
                     _introAnimation: null,
                     halfViewport: 0,
                     itemHeight: 0,
@@ -489,14 +493,16 @@
 
                         const rect = target.getBoundingClientRect();
                         const targetStyle = getComputedStyle(target);
+                        const isMobile = !window.matchMedia('(min-width: 768px)').matches;
                         Object.assign(headline.style, {
                             position: 'fixed',
-                            left: `${rect.left}px`,
+                            left: `${isMobile ? rect.left + rect.width / 2 : rect.left}px`,
                             top: `${rect.top}px`,
-                            width: `${rect.width}px`,
+                            width: 'max-content',
                             maxWidth: 'none',
                             margin: '0',
                             textAlign: targetStyle.textAlign,
+                            transform: isMobile ? 'translateX(-50%)' : 'none',
                         });
                     },
 
@@ -548,6 +554,17 @@
                                 this._introAnimation.oncancel = () => this._finishIntro();
                             });
                         });
+                    },
+
+                    revealRoles() {
+                        if (this._roleRevealPlayed) return;
+                        this._roleRevealPlayed = true;
+                        this.roleRevealActive = true;
+                        clearTimeout(this._roleRevealTimer);
+                        // Let the stagger finish, then restore the wheel's live transforms.
+                        this._roleRevealTimer = setTimeout(() => {
+                            this.roleRevealActive = false;
+                        }, 1050);
                     },
 
                     _finishIntro() {
@@ -633,7 +650,7 @@
                         const dist = Math.abs(i - this.centerIndex);
                         const scale = Math.max(0.78, 1 - dist * 0.06);
                         const opacity = Math.max(0.25, 1 - dist * 0.18);
-                        const introDelay = Math.min(dist, 6) * 90;
+                        const introDelay = Math.min(dist, 6) * 55;
                         return `transform: scale(${scale}); opacity: ${opacity}; --role-scale: ${scale}; --role-opacity: ${opacity}; --intro-delay: ${introDelay}ms;`;
                     },
 
