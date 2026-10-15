@@ -326,9 +326,8 @@
 
                 <!-- Right: wheel / expanded -->
                 <section class="order-1 relative flex h-full min-h-0 w-full flex-col items-center justify-start pt-2 md:order-2 md:justify-center md:pt-0">
-                    <h1 x-ref="mobileIntroTarget" :class="introComplete ? 'intro-target is-ready' : 'intro-target'" class="cw-h1 cw-serif mb-3 w-full text-center text-3xl leading-[1.02] tracking-tight md:hidden" data-testid="mobile-intro-target">
-                        I am many <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>,<br />
-                        <span>all at once.</span>
+                    <h1 x-ref="mobileIntroTarget" :class="introComplete ? 'intro-target is-ready' : 'intro-target'" class="cw-h1 cw-serif relative top-8 mb-3 w-full whitespace-nowrap text-center text-[25px] leading-tight tracking-tight md:hidden" data-testid="mobile-intro-target">
+                        I am many <span class="italic" style="color: rgba(255,255,255,0.85)">things</span>, all at once.
                     </h1>
 
                     <!-- Expanded panel: Alpine only controls which server-rendered panel is visible. -->
